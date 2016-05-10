@@ -6,6 +6,7 @@
 package CaptchaTest;
 
 import robots.OxCaptcha.*;
+import java.awt.image.BufferedImage;
 
 /**
  *
@@ -42,9 +43,13 @@ public class Test {
         //c.transformStretch();
         c.transformShear();
         
+        // Get the rendered image
+        BufferedImage img = c.getImage();
         
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
+        
+        // Write image to a png file
         System.out.println(Long.toString(elapsedTime) + " ms");
         try {
             c.writeImageToFile("test.png");

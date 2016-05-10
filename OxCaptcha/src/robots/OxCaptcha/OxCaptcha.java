@@ -360,18 +360,10 @@ public class OxCaptcha {
         return _img;
     }
     
-//    public int[][] getImage() {
-//        int pix[][] = new int[_height][_width];
-//        int j = 0;
-//
-//        for (int x = 0; x < _width; x++) {
-//            for (int y = 0; y < _height; y++) {
-//                pix[j] = _img.getRGB(y, y, y, y, ints, y, y);
-//                j++;
-//            }
-//        }
-//        return pix;
-//    }
+    public int[][] getImageArray() {
+        int pix[][] = new int[_height][_width];
+        return pix;
+    }
 
     public void writeImageToFile(String fileName) throws IOException {
         ImageIO.write(_img, "png", new File(fileName));
