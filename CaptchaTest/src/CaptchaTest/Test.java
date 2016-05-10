@@ -24,7 +24,9 @@ public class Test {
         c.text(5, new char[] {'a', 'b', 'c', '1', '2', '3'});
         c.noise();
         c.noiseStraightLine();
-        //c.gimp(new FishEyeGimpyRenderer());
+        c.transformFishEye();
+        //c.transformDropShadow();
+        //c.gimp(new RippleGimpyRenderer());
         //c.build();
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;

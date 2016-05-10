@@ -10,18 +10,23 @@ package robots.OxCaptcha;
  *
  * @author gunes
  */
+import com.jhlabs.image.ShadowFilter;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageFilter;
 import javax.imageio.ImageIO;
 import java.io.*;
 import java.security.SecureRandom;
@@ -220,6 +225,86 @@ public class OxCaptcha {
         return this;
     }
 
+    public OxCaptcha transform() {
+        return transformFishEye();
+    }
+    
+    public OxCaptcha transformFishEye() {
+        Color hColor = Color.BLACK;
+        Color vColor = Color.BLACK;
+        float thickness = 1.0f;
+        
+        _img_g.setStroke(new BasicStroke(thickness));
+        
+        int hstripes = _height / 7;
+        int vstripes = _width / 7;
+
+        // Calculate space between lines
+        int hspace = _height / (hstripes + 1);
+        int vspace = _width / (vstripes + 1);
+
+        // Draw the horizontal stripes
+        for (int i = hspace; i < _height; i = i + hspace) {
+            _img_g.setColor(hColor);
+            _img_g.drawLine(0, i, _width, i);
+        }
+
+        // Draw the vertical stripes
+        for (int i = vspace; i < _width; i = i + vspace) {
+            _img_g.setColor(vColor);
+            _img_g.drawLine(i, 0, i, _height);
+        }
+
+        // Create a pixel array of the original image.
+        // we need this later to do the operations on..
+        int pix[] = new int[_height * _width];
+        int j = 0;
+
+        for (int j1 = 0; j1 < _width; j1++) {
+            for (int k1 = 0; k1 < _height; k1++) {
+                pix[j] = _img.getRGB(j1, k1);
+                j++;
+            }
+        }
+
+        double distance = ranInt(_width / 4, _width / 3);
+
+        // put the distortion in the (dead) middle
+        int wMid = _width / 2;
+        int hMid = _height / 2;
+
+        // again iterate over all pixels..
+        for (int x = 0; x < _width; x++) {
+            for (int y = 0; y < _height; y++) {
+
+                int relX = x - wMid;
+                int relY = y - hMid;
+
+                double d1 = Math.sqrt(relX * relX + relY * relY);
+                if (d1 < distance) {
+
+                    int j2 = wMid
+                            + (int) (((fishEyeFormula(d1 / distance) * distance) / d1) * (x - wMid));
+                    int k2 = hMid
+                            + (int) (((fishEyeFormula(d1 / distance) * distance) / d1) * (y - hMid));
+                    _img.setRGB(x, y, pix[j2 * _height + k2]);
+                }
+            }
+        }
+        return this;
+    }
+    
+    public OxCaptcha transformDropShadow() {
+        int radius = 3;
+	int opacity = 75;        
+        ShadowFilter sFilter = new ShadowFilter();
+        sFilter.setRadius(radius);
+        sFilter.setOpacity(opacity);
+        ImageUtil.applyFilter(_img, sFilter);        
+        
+        return this;
+    }
+    
     public OxCaptcha gimp() {
         return gimp(new RippleGimpyRenderer());
     }
@@ -256,6 +341,32 @@ public class OxCaptcha {
     
     public BufferedImage getImage() {
         return _img;
+    }
+    
+    private int ranInt(int i, int j) {
+        double d = Math.random();
+        return (int) (i + ((j - i) + 1) * d);
+    }
+
+    private double fishEyeFormula(double s) {
+        // implementation of:
+        // g(s) = - (3/4)s3 + (3/2)s2 + (1/4)s, with s from 0 to 1.
+        if (s < 0.0D) {
+            return 0.0D;
+        }
+        if (s > 1.0D) {
+            return s;
+        }
+
+        return -0.75D * s * s * s + 1.5D * s * s + 0.25D * s;
+    }
+
+    private static final void applyFilter(BufferedImage img, ImageFilter filter) {
+            FilteredImageSource src = new FilteredImageSource(img.getSource(), filter);
+            Image fImg = Toolkit.getDefaultToolkit().createImage(src);
+            Graphics2D g = img.createGraphics();
+            g.drawImage(fImg, 0, 0, null, null);
+            g.dispose();
     }
     
     public void writeImageToFile(String fileName) throws IOException {
