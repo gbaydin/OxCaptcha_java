@@ -21,7 +21,7 @@ public class Test {
         long startTime = System.currentTimeMillis();
         
         OxCaptcha c = new OxCaptcha(200, 50);
-        c.addText();
+        c.addText(5, new char[] {'a', 'b', 'c', '1', '2', '3'});
         c.addNoise();
         //c.gimp(new FishEyeGimpyRenderer());
         c.build();
