@@ -17,6 +17,8 @@ c.backgroundFlat();
 // Add text
 c.text(5);
 //c.text("2a2ba");
+//c.text(new char[] {'a', 'b', 'c'}, new int[] {1, 2, 7}, new int[] {30, 5, -10});
+
 
 // Add noise
 c.noise();
