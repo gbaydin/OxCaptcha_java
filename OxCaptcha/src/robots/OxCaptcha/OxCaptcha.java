@@ -18,6 +18,7 @@ import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
@@ -25,9 +26,11 @@ import java.awt.Toolkit;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Arc2D;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
@@ -349,30 +352,57 @@ public class OxCaptcha {
         g.dispose();
         return this;
     }
+    
+    public OxCaptcha backgroundFlat() {
+        Color color = Color.GRAY;
         
-    public BufferedImage build() {
-        if (_bg == null) {
-                _bg = new TransparentBackgroundProducer().getBackground(_img.getWidth(), _img.getHeight());
+        _img_g.setPaint(color);
+        _img_g.fillRect(0,0, _width, _height);
+        
+        return this;
+    }
+    
+    public OxCaptcha backgroundGradient() {
+        Color fromColor = Color.DARK_GRAY;
+        Color toColor = Color.WHITE;
+       
+        RenderingHints hints = new RenderingHints(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
+        _img_g.setRenderingHints(hints);
+
+        // create the gradient color
+        GradientPaint ytow = new GradientPaint(0, 0, fromColor, _width, _height, toColor);
+
+        _img_g.setPaint(ytow);
+        // draw gradient color
+        _img_g.fillRect(0, 0, _width, _height);
+
+        return this;     
+    }
+    
+    public OxCaptcha backgroundSquiggles() {
+        BasicStroke bs = new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
+                BasicStroke.JOIN_MITER, 2.0f, new float[] { 2.0f, 2.0f }, 0.0f);
+        _img_g.setStroke(bs);
+        AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
+                0.75f);
+        _img_g.setComposite(ac);
+
+        _img_g.translate(_width * -1.0, 0.0);
+        double delta = 5.0;
+        double xt;
+        double ts = 0.0;
+        for (xt = 0.0; xt < (2.0 * _width); xt += delta) {
+            Arc2D arc = new Arc2D.Double(0, 0, _width, _height, 0.0, 360.0,
+                    Arc2D.OPEN);
+            _img_g.draw(arc);
+            _img_g.translate(delta, 0.0);
+            ts += delta;
         }
 
-        // Paint the main image over the background
-        Graphics2D g = _bg.createGraphics();
-        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-        g.drawImage(_img, null, null);
-
-        if (_addBorder) {
-                int width = _img.getWidth();
-                int height = _img.getHeight();
-
-            g.setColor(Color.BLACK);
-            g.drawLine(0, 0, 0, width);
-            g.drawLine(0, 0, width, 0);
-            g.drawLine(0, height - 1, width, height - 1);
-            g.drawLine(width - 1, height - 1, width - 1, 0);
-        }
-
-        _img = _bg;
-        return _img;
+        return this;
     }
     
     public BufferedImage getImage() {
