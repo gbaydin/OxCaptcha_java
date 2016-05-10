@@ -7,6 +7,8 @@ package CaptchaTest;
 
 import robots.OxCaptcha.*;
 import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.Arrays;
 
 /**
  *
@@ -43,18 +45,22 @@ public class Test {
         //c.transformStretch();
         c.transformShear();
         
-        // Get the rendered image
+        // Get rendered image
         BufferedImage img = c.getImage();
+        
+        // Get rendered image as a 2D array
+        int[][] imgArray = c.getImageArray();
+        System.out.println(Arrays.toString(imgArray[40]));
         
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
         
-        // Write image to a png file
+        // Write rendered image to a png file
         System.out.println(Long.toString(elapsedTime) + " ms");
         try {
             c.writeImageToFile("test.png");
         }
-        catch (Exception e) {
+        catch (IOException e) {
             e.printStackTrace();
         }
     }

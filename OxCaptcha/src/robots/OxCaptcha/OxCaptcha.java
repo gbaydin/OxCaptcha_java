@@ -361,16 +361,22 @@ public class OxCaptcha {
     }
     
     public int[][] getImageArray() {
-        int pix[][] = new int[_height][_width];
-        return pix;
+        int ret[][] = new int[_height][_width];
+        for (int x = 0; x < _width - 1; x++){
+            for (int y = 0; y < _height - 1; y++)
+            {
+                int p = _img.getRGB(x, y);
+                int red = (p >> 16) & 0xff;
+                ret[y][x] = red;
+            }
+        }
+        return ret;
     }
 
     public void writeImageToFile(String fileName) throws IOException {
         ImageIO.write(_img, "png", new File(fileName));
     }
-    
-    
-    
+ 
     private int ranInt(int i, int j) {
         double d = Math.random();
         return (int) (i + ((j - i) + 1) * d);

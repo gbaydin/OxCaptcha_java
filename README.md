@@ -28,14 +28,17 @@ c.noise();
 //c.transformStretch();
 c.transformShear();
 
-// Get the rendered image
+// Get rendered image
 BufferedImage img = c.getImage();
+
+// Get rendered image as a 2D array
+int[][] imgArray = c.getImageArray();
 
 // Write image to a png file
 try {
     c.writeImageToFile("test.png");
 }
-catch (Exception e) {
+catch (IOException e) {
     e.printStackTrace();
 }
 ```
