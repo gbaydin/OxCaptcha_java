@@ -40,11 +40,11 @@ public class OxCaptcha {
     private int _width;
     private int _height;
     private BufferedImage _bg;
-    private String _answer = "";
+    private char[] _text = new char[] {};
     private boolean _addBorder = false;
     
     public OxCaptcha(int width, int height) {
-        _img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        _img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         _img_g = _img.createGraphics();
 
         _img_g.setRenderingHints(new RenderingHints(
@@ -58,31 +58,21 @@ public class OxCaptcha {
     }
 
     public OxCaptcha backgroundFlat() {
-        Color color = Color.BLACK;
-        
+        return backgroundFlat(Color.BLACK);
+    }
+    public OxCaptcha backgroundFlat(Color color) {
         _img_g.setPaint(color);
         _img_g.fillRect(0,0, _width, _height);
-        
         return this;
     }
     
     public OxCaptcha backgroundGradient() {
-        Color fromColor = Color.DARK_GRAY;
-        Color toColor = Color.WHITE;
-       
-        RenderingHints hints = new RenderingHints(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-
-        _img_g.setRenderingHints(hints);
-
-        // create the gradient color
-        GradientPaint ytow = new GradientPaint(0, 0, fromColor, _width, _height, toColor);
-
+        return backgroundGradient(Color.DARK_GRAY, Color.BLACK);
+    }
+    public OxCaptcha backgroundGradient(Color color1, Color color2) {
+        GradientPaint ytow = new GradientPaint(0, 0, color1, _width, _height, color2);
         _img_g.setPaint(ytow);
-        // draw gradient color
         _img_g.fillRect(0, 0, _width, _height);
-
         return this;     
     }
     
@@ -109,28 +99,33 @@ public class OxCaptcha {
         return this;
     }
     
-    public OxCaptcha text() {
+    public OxCaptcha textRandom() {
         return text(5, new char[] { 'a', 'b', 'c', 'd',
             'e', 'f', 'g', 'h', 'k', 'm', 'n', 'p', 'r', 'w', 'x', 'y',
             '2', '3', '4', '5', '6', '7', '8', });
     }
     
-    public OxCaptcha text(int length) {
+    public OxCaptcha textRandom(int length) {
         return text(length, new char[] { 'a', 'b', 'c', 'd',
             'e', 'f', 'g', 'h', 'k', 'm', 'n', 'p', 'r', 'w', 'x', 'y',
             '2', '3', '4', '5', '6', '7', '8', });
     }
 
     public OxCaptcha text(int length, char[] chars) {
-        String t = "";
+        char[] t = new char[length];
         for (int i = 0; i < length; i++) {
-            t += chars[RAND.nextInt(chars.length)];
+            t[i] = chars[RAND.nextInt(chars.length)];
         }
         return text(t);
     }
     
-    public OxCaptcha text(String t) {
-        _answer = t;
+    public OxCaptcha text(char[] text) {
+        _text = text;
+        renderText();
+        return this;
+    }
+    
+    private void renderText() {
 
         Color color = Color.WHITE;
         // The text will be rendered 25%/5% of the image height/width from the X and Y axes
@@ -151,7 +146,7 @@ public class OxCaptcha {
         int yBaseline =  _height - (int) Math.round(_height * yOffset);
         
         char[] chars = new char[1];
-        for (char c : _answer.toCharArray()) {
+        for (char c : _text) {
             chars[0] = c;
             
             int choiceFont = RAND.nextInt(_fonts.size());
@@ -164,7 +159,6 @@ public class OxCaptcha {
             int width = (int) gv.getVisualBounds().getWidth();
             xBaseline = xBaseline + width + 5;
         }
-        return this;
     }
     
     public OxCaptcha noise() {
@@ -360,9 +354,26 @@ public class OxCaptcha {
         return this;
     }
     
+    public String getText() {
+        return new String(_text);
+    }
+
     public BufferedImage getImage() {
         return _img;
     }
+    
+//    public int[][] getImage() {
+//        int pix[][] = new int[_height][_width];
+//        int j = 0;
+//
+//        for (int x = 0; x < _width; x++) {
+//            for (int y = 0; y < _height; y++) {
+//                pix[j] = _img.getRGB(y, y, y, y, ints, y, y);
+//                j++;
+//            }
+//        }
+//        return pix;
+//    }
 
     public void writeImageToFile(String fileName) throws IOException {
         ImageIO.write(_img, "png", new File(fileName));
