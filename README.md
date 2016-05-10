@@ -1,5 +1,5 @@
 # OxCaptcha
-Java CAPTCHA generator without external dependencies.
+Java CAPTCHA generator without dependencies.
 
 ### License
 
