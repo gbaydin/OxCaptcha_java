@@ -10,7 +10,10 @@ package robots.OxCaptcha;
  *
  * @author gunes
  */
+import com.jhlabs.image.BlockFilter;
+import com.jhlabs.image.RippleFilter;
 import com.jhlabs.image.ShadowFilter;
+import com.jhlabs.image.TransformFilter;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -21,6 +24,7 @@ import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
@@ -300,17 +304,49 @@ public class OxCaptcha {
         ShadowFilter sFilter = new ShadowFilter();
         sFilter.setRadius(radius);
         sFilter.setOpacity(opacity);
-        ImageUtil.applyFilter(_img, sFilter);        
+        applyFilter(_img, sFilter);        
         
         return this;
     }
     
-    public OxCaptcha gimp() {
-        return gimp(new RippleGimpyRenderer());
+    public OxCaptcha transformBlock() {
+        int blockSize = 3;
+        BlockFilter filter = new BlockFilter();
+        filter.setBlockSize(blockSize);
+        applyFilter(_img, filter); 
+        return this;
     }
 
-    public OxCaptcha gimp(GimpyRenderer gimpy) {
-        gimpy.gimp(_img);
+    public OxCaptcha transformRipple() {
+        RippleFilter filter = new RippleFilter();
+        filter.setWaveType(RippleFilter.SINGLEFRAME);
+        filter.setXAmplitude(2.6f);
+        filter.setYAmplitude(1.7f);
+        filter.setXWavelength(15);
+        filter.setYWavelength(5);
+        filter.setEdgeAction(TransformFilter.RANDOMPIXELORDER);
+        applyFilter(_img, filter);        
+        return this;
+    }
+    
+    public OxCaptcha transformStretch() {
+        double xScale = 3.0;
+        double yScale = 1.0;
+        Graphics2D g = _img.createGraphics();
+        AffineTransform at = new AffineTransform();
+        at.scale(xScale, yScale);
+//		RenderingHints hints = new RenderingHints(RenderingHints.KEY_INTERPOLATION,
+//                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g.drawRenderedImage(_img, at);
+        return this;
+    }
+    
+    public OxCaptcha transformShear() {
+        Color color = Color.GRAY;
+        Graphics2D g = _img.createGraphics();
+        shearX(g, color, _width, _height);
+        shearY(g, color, _width, _height);
+        g.dispose();
         return this;
     }
         
@@ -366,10 +402,49 @@ public class OxCaptcha {
             Image fImg = Toolkit.getDefaultToolkit().createImage(src);
             Graphics2D g = img.createGraphics();
             g.drawImage(fImg, 0, 0, null, null);
-            g.dispose();
+            //g.dispose();
     }
     
     public void writeImageToFile(String fileName) throws IOException {
         ImageIO.write(_img, "png", new File(fileName));
     }
+    
+    private void shearX(Graphics2D g, Color color, int w1, int h1) {
+        int period = RAND.nextInt(10) + 5;
+
+        boolean borderGap = true;
+        int frames = 15;
+        int phase = RAND.nextInt(5) + 2;
+
+        for (int i = 0; i < h1; i++) {
+            double d = (period >> 1)
+                    * Math.sin((double) i / (double) period
+                            + (6.2831853071795862D * phase) / frames);
+            g.copyArea(0, i, w1, 1, (int) d, 0);
+            if (borderGap) {
+                g.setColor(color);
+                g.drawLine((int) d, i, 0, i);
+                g.drawLine((int) d + w1, i, w1, i);
+            }
+        }
+    }
+
+    private void shearY(Graphics2D g, Color color, int w1, int h1) {
+        int period = RAND.nextInt(30) + 10; // 50;
+
+        boolean borderGap = true;
+        int frames = 15;
+        int phase = 7;
+        for (int i = 0; i < w1; i++) {
+            double d = (period >> 1)
+                    * Math.sin((float) i / period
+                            + (6.2831853071795862D * phase) / frames);
+            g.copyArea(i, 0, 1, h1, 0, (int) d);
+            if (borderGap) {
+                g.setColor(color);
+                g.drawLine(i, (int) d, i, 0);
+                g.drawLine(i, (int) d + h1, i, h1);
+            }
+        }
+    }    
 }
