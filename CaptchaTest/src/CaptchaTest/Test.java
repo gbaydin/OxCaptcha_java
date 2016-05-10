@@ -21,10 +21,11 @@ public class Test {
         long startTime = System.currentTimeMillis();
         
         OxCaptcha c = new OxCaptcha(200, 50);
-        c.addText(5, new char[] {'a', 'b', 'c', '1', '2', '3'});
-        c.addNoise();
+        c.text(5, new char[] {'a', 'b', 'c', '1', '2', '3'});
+        c.noise();
+        c.noiseStraightLine();
         //c.gimp(new FishEyeGimpyRenderer());
-        c.build();
+        //c.build();
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
         System.out.println(Long.toString(elapsedTime) + " ms");

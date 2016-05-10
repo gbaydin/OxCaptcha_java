@@ -11,12 +11,16 @@ package robots.OxCaptcha;
  * @author gunes
  */
 import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.geom.CubicCurve2D;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.*;
@@ -66,24 +70,24 @@ public class OxCaptcha {
         _height = height;
     }
     
-    public OxCaptcha addText() {
-        return addText(DEFAULT_LENGTH, DEFAULT_CHARS);
+    public OxCaptcha text() {
+        return text(DEFAULT_LENGTH, DEFAULT_CHARS);
     }
     
-    public OxCaptcha addText(int length) {
-        return addText(length, DEFAULT_CHARS);
+    public OxCaptcha text(int length) {
+        return text(length, DEFAULT_CHARS);
     }
 
-    public OxCaptcha addText(int length, char[] chars) {
-        String text = "";
+    public OxCaptcha text(int length, char[] chars) {
+        String t = "";
         for (int i = 0; i < length; i++) {
-            text += chars[RAND.nextInt(chars.length)];
+            t += chars[RAND.nextInt(chars.length)];
         }
-        return addText(text);
+        return text(t);
     }
 
-    public OxCaptcha addText(String text) {
-        _answer = text;
+    public OxCaptcha text(String t) {
+        _answer = t;
 
         RenderingHints hints = new RenderingHints(
                 RenderingHints.KEY_ANTIALIASING,
@@ -116,10 +120,105 @@ public class OxCaptcha {
 
     }
     
+    public OxCaptcha noise() {
+        return noiseCurvedLine();
+    }
     
-    public OxCaptcha addNoise() {
-        return this.addNoise(new CurvedLineNoiseProducer());
-    }    
+    public OxCaptcha noiseCurvedLine() {
+        return noiseCurvedLine(Color.BLACK, 3.0f);
+    }
+    
+    public OxCaptcha noiseCurvedLine(Color color, float thickness) {
+        // the curve from where the points are taken
+        CubicCurve2D cc = new CubicCurve2D.Float(_width * .1f, _height
+                * RAND.nextFloat(), _width * .1f, _height
+                * RAND.nextFloat(), _width * .25f, _height
+                * RAND.nextFloat(), _width * .9f, _height
+                * RAND.nextFloat());
+
+        // creates an iterator to define the boundary of the flattened curve
+        PathIterator pi = cc.getPathIterator(null, 2);
+        Point2D tmp[] = new Point2D[200];
+        int i = 0;
+
+        // while pi is iterating the curve, adds points to tmp array
+        while (!pi.isDone()) {
+            float[] coords = new float[6];
+            switch (pi.currentSegment(coords)) {
+            case PathIterator.SEG_MOVETO:
+            case PathIterator.SEG_LINETO:
+                tmp[i] = new Point2D.Float(coords[0], coords[1]);
+            }
+            i++;
+            pi.next();
+        }
+
+        // the points where the line changes the stroke and direction
+        Point2D[] pts = new Point2D[i];
+        // copies points from tmp to pts
+        System.arraycopy(tmp, 0, pts, 0, i);
+
+        _img_g.setRenderingHints(new RenderingHints(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON));
+
+        _img_g.setColor(color);
+
+        // for the maximum 3 point change the stroke and direction
+        for (i = 0; i < pts.length - 1; i++) {
+            if (i < 3) {
+            	_img_g.setStroke(new BasicStroke(thickness));
+            }
+            _img_g.drawLine((int) pts[i].getX(), (int) pts[i].getY(),
+                    (int) pts[i + 1].getX(), (int) pts[i + 1].getY());
+        }
+        return this;
+    }
+    
+    public OxCaptcha noiseStraightLine() {
+        return noiseStraightLine(Color.BLACK, 3.0f);
+    }
+    
+    public OxCaptcha noiseStraightLine(Color color, float thickness) {
+        int y1 = RAND.nextInt(_height) + 1;
+        int y2 = RAND.nextInt(_height) + 1;
+        int x1 = 0;
+        int x2 = _width;
+
+        // The thick line is in fact a filled polygon
+        _img_g.setColor(color);
+        int dX = x2 - x1;
+        int dY = y2 - y1;
+        // line length
+        double lineLength = Math.sqrt(dX * dX + dY * dY);
+
+        double scale = thickness / (2 * lineLength);
+
+        // The x and y increments from an endpoint needed to create a
+        // rectangle...
+        double ddx = -scale * dY;
+        double ddy = scale * dX;
+        ddx += (ddx > 0) ? 0.5 : -0.5;
+        ddy += (ddy > 0) ? 0.5 : -0.5;
+        int dx = (int) ddx;
+        int dy = (int) ddy;
+
+        // Now we can compute the corner points...
+        int xPoints[] = new int[4];
+        int yPoints[] = new int[4];
+
+        xPoints[0] = x1 + dx;
+        yPoints[0] = y1 + dy;
+        xPoints[1] = x1 - dx;
+        yPoints[1] = y1 - dy;
+        xPoints[2] = x2 - dx;
+        yPoints[2] = y2 - dy;
+        xPoints[3] = x2 + dx;
+        yPoints[3] = y2 + dy;
+
+        _img_g.fillPolygon(xPoints, yPoints, 4);
+        return this;
+    }
 
     public OxCaptcha gimp() {
         return gimp(new RippleGimpyRenderer());
@@ -130,10 +229,6 @@ public class OxCaptcha {
         return this;
     }
         
-    public OxCaptcha addNoise(NoiseProducer nProd) {
-        nProd.makeNoise(_img);
-        return this;
-    }    
     public BufferedImage build() {
         if (_bg == null) {
                 _bg = new TransparentBackgroundProducer().getBackground(_img.getWidth(), _img.getHeight());
