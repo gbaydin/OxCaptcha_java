@@ -20,17 +20,28 @@ public class Test {
         // TODO code application logic here
         long startTime = System.currentTimeMillis();
         
-        OxCaptcha c = new OxCaptcha(200, 50);
+        // Create Captcha container
+        OxCaptcha c = new OxCaptcha(170, 50);
+        
+        // Create background
         c.backgroundFlat();
-        c.backgroundGradient();
-        c.backgroundSquiggles();
+        //c.backgroundGradient();
+        //c.backgroundSquiggles();
+        
+        // Add text
         c.text(5, new char[] {'a', 'b', 'c', '1', '2', '3'});
         //c.text("2a2ba");
-        //c.noise();
+        
+        
+        // Add noise
+        c.noise();
         //c.noiseStraightLine();
+        //c.noiseCurvedLine();
+        
+        // Apply transformation
         //c.transformFishEye();
         //c.transformStretch();
-        //c.transformShear();
+        c.transformShear();
         //c.transformDropShadow();
 
         long stopTime = System.currentTimeMillis();

@@ -1,15 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package robots.OxCaptcha;
 
-
-/**
- *
- * @author gunes
- */
 import com.jhlabs.image.BlockFilter;
 import com.jhlabs.image.RippleFilter;
 import com.jhlabs.image.ShadowFilter;
@@ -41,30 +32,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/**
- *
- * @author gunes
- */
+
 public class OxCaptcha {
     private static final Random RAND = new SecureRandom();
-    private static final int DEFAULT_LENGTH = 5;
-    private static final char[] DEFAULT_CHARS = new char[] { 'a', 'b', 'c', 'd',
-            'e', 'f', 'g', 'h', 'k', 'm', 'n', 'p', 'r', 'w', 'x', 'y',
-            '2', '3', '4', '5', '6', '7', '8', };
-    private static final List<Color> DEFAULT_COLORS = new ArrayList<Color>();
-    private static final List<Font> DEFAULT_FONTS = new ArrayList<Font>();
-    // The text will be rendered 25%/5% of the image height/width from the X and Y axes
-    private static final double YOFFSET = 0.25;
-    private static final double XOFFSET = 0.05;
 
-    static {
-            DEFAULT_COLORS.add(Color.BLACK);
-            DEFAULT_FONTS.add(new Font("Arial", Font.BOLD, 40));
-            DEFAULT_FONTS.add(new Font("Courier", Font.BOLD, 40));
-    }
 	
-    private final List<Color> _colors = new ArrayList<Color>();
-    private final List<Font> _fonts = new ArrayList<Font>();    
+    private List<Font> _fonts = new ArrayList<Font>();    
     private BufferedImage _img;
     private Graphics2D _img_g;
     private int _width;
@@ -74,20 +47,78 @@ public class OxCaptcha {
     private boolean _addBorder = false;
     
     public OxCaptcha(int width, int height) {
-        _colors.addAll(DEFAULT_COLORS);
-        _fonts.addAll(DEFAULT_FONTS);        
         _img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         _img_g = _img.createGraphics();
         _width = width;
         _height = height;
+
+        _fonts.add(new Font("Arial", Font.BOLD, 40));
+        _fonts.add(new Font("Courier", Font.BOLD, 40));
+
+    }
+
+    public OxCaptcha backgroundFlat() {
+        Color color = Color.BLACK;
+        
+        _img_g.setPaint(color);
+        _img_g.fillRect(0,0, _width, _height);
+        
+        return this;
+    }
+    
+    public OxCaptcha backgroundGradient() {
+        Color fromColor = Color.DARK_GRAY;
+        Color toColor = Color.WHITE;
+       
+        RenderingHints hints = new RenderingHints(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
+        _img_g.setRenderingHints(hints);
+
+        // create the gradient color
+        GradientPaint ytow = new GradientPaint(0, 0, fromColor, _width, _height, toColor);
+
+        _img_g.setPaint(ytow);
+        // draw gradient color
+        _img_g.fillRect(0, 0, _width, _height);
+
+        return this;     
+    }
+    
+    public OxCaptcha backgroundSquiggles() {
+        BasicStroke bs = new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
+                BasicStroke.JOIN_MITER, 2.0f, new float[] { 2.0f, 2.0f }, 0.0f);
+        _img_g.setStroke(bs);
+        AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
+                0.75f);
+        _img_g.setComposite(ac);
+
+        _img_g.translate(_width * -1.0, 0.0);
+        double delta = 5.0;
+        double xt;
+        //double ts = 0.0;
+        for (xt = 0.0; xt < (2.0 * _width); xt += delta) {
+            Arc2D arc = new Arc2D.Double(0, 0, _width, _height, 0.0, 360.0,
+                    Arc2D.OPEN);
+            _img_g.draw(arc);
+            _img_g.translate(delta, 0.0);
+            //ts += delta;
+        }
+
+        return this;
     }
     
     public OxCaptcha text() {
-        return text(DEFAULT_LENGTH, DEFAULT_CHARS);
+        return text(5, new char[] { 'a', 'b', 'c', 'd',
+            'e', 'f', 'g', 'h', 'k', 'm', 'n', 'p', 'r', 'w', 'x', 'y',
+            '2', '3', '4', '5', '6', '7', '8', });
     }
     
     public OxCaptcha text(int length) {
-        return text(length, DEFAULT_CHARS);
+        return text(length, new char[] { 'a', 'b', 'c', 'd',
+            'e', 'f', 'g', 'h', 'k', 'm', 'n', 'p', 'r', 'w', 'x', 'y',
+            '2', '3', '4', '5', '6', '7', '8', });
     }
 
     public OxCaptcha text(int length, char[] chars) {
@@ -97,9 +128,14 @@ public class OxCaptcha {
         }
         return text(t);
     }
-
+    
     public OxCaptcha text(String t) {
         _answer = t;
+
+        Color color = Color.WHITE;
+        // The text will be rendered 25%/5% of the image height/width from the X and Y axes
+        double yOffset = 0.25;
+        double xOffset = 0.05;
 
         RenderingHints hints = new RenderingHints(
                 RenderingHints.KEY_ANTIALIASING,
@@ -107,17 +143,17 @@ public class OxCaptcha {
         hints.add(new RenderingHints(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY));
         _img_g.setRenderingHints(hints);
+
+        _img_g.setColor(color);
         
         FontRenderContext frc = _img_g.getFontRenderContext();
-        int xBaseline = (int) Math.round(_width * XOFFSET);
-        int yBaseline =  _height - (int) Math.round(_height * YOFFSET);
+        int xBaseline = (int) Math.round(_width * xOffset);
+        int yBaseline =  _height - (int) Math.round(_height * yOffset);
         
         char[] chars = new char[1];
         for (char c : _answer.toCharArray()) {
             chars[0] = c;
             
-            _img_g.setColor(_colors.get(RAND.nextInt(_colors.size())));
-
             int choiceFont = RAND.nextInt(_fonts.size());
             Font font = _fonts.get(choiceFont);
             _img_g.setFont(font);
@@ -129,7 +165,6 @@ public class OxCaptcha {
             xBaseline = xBaseline + width;
         }
         return this;
-
     }
     
     public OxCaptcha noise() {
@@ -353,61 +388,15 @@ public class OxCaptcha {
         return this;
     }
     
-    public OxCaptcha backgroundFlat() {
-        Color color = Color.GRAY;
-        
-        _img_g.setPaint(color);
-        _img_g.fillRect(0,0, _width, _height);
-        
-        return this;
-    }
-    
-    public OxCaptcha backgroundGradient() {
-        Color fromColor = Color.DARK_GRAY;
-        Color toColor = Color.WHITE;
-       
-        RenderingHints hints = new RenderingHints(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-
-        _img_g.setRenderingHints(hints);
-
-        // create the gradient color
-        GradientPaint ytow = new GradientPaint(0, 0, fromColor, _width, _height, toColor);
-
-        _img_g.setPaint(ytow);
-        // draw gradient color
-        _img_g.fillRect(0, 0, _width, _height);
-
-        return this;     
-    }
-    
-    public OxCaptcha backgroundSquiggles() {
-        BasicStroke bs = new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
-                BasicStroke.JOIN_MITER, 2.0f, new float[] { 2.0f, 2.0f }, 0.0f);
-        _img_g.setStroke(bs);
-        AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
-                0.75f);
-        _img_g.setComposite(ac);
-
-        _img_g.translate(_width * -1.0, 0.0);
-        double delta = 5.0;
-        double xt;
-        double ts = 0.0;
-        for (xt = 0.0; xt < (2.0 * _width); xt += delta) {
-            Arc2D arc = new Arc2D.Double(0, 0, _width, _height, 0.0, 360.0,
-                    Arc2D.OPEN);
-            _img_g.draw(arc);
-            _img_g.translate(delta, 0.0);
-            ts += delta;
-        }
-
-        return this;
-    }
-    
     public BufferedImage getImage() {
         return _img;
     }
+
+    public void writeImageToFile(String fileName) throws IOException {
+        ImageIO.write(_img, "png", new File(fileName));
+    }
+    
+    
     
     private int ranInt(int i, int j) {
         double d = Math.random();
@@ -433,10 +422,6 @@ public class OxCaptcha {
             Graphics2D g = img.createGraphics();
             g.drawImage(fImg, 0, 0, null, null);
             //g.dispose();
-    }
-    
-    public void writeImageToFile(String fileName) throws IOException {
-        ImageIO.write(_img, "png", new File(fileName));
     }
     
     private void shearX(Graphics2D g, Color color, int w1, int h1) {
