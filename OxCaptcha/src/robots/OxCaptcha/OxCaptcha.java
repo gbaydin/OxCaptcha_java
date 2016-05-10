@@ -33,7 +33,6 @@ import java.util.Random;
 public class OxCaptcha {
     private static final Random RAND = new SecureRandom();
 
-	
     private List<Font> _fonts = new ArrayList<Font>();    
     private BufferedImage _img;
     private Graphics2D _img_g;
@@ -42,6 +41,9 @@ public class OxCaptcha {
     private BufferedImage _bg;
     private char[] _text = new char[] {};
     private boolean _addBorder = false;
+    private char[] _charSet = new char[] { 'a', 'b', 'c', 'd',
+            'e', 'f', 'g', 'h', 'k', 'm', 'n', 'p', 'r', 'w', 'x', 'y',
+            '2', '3', '4', '5', '6', '7', '8', };
     
     public OxCaptcha(int width, int height) {
         _img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
@@ -57,6 +59,10 @@ public class OxCaptcha {
         _fonts.add(new Font("Arial", Font.PLAIN, 40));
     }
 
+    public void setCharSet(char[] charSet) {
+        _charSet = charSet;
+    }
+    
     public OxCaptcha backgroundFlat() {
         return backgroundFlat(Color.BLACK);
     }
@@ -99,22 +105,14 @@ public class OxCaptcha {
         return this;
     }
     
-    public OxCaptcha textRandom() {
-        return text(5, new char[] { 'a', 'b', 'c', 'd',
-            'e', 'f', 'g', 'h', 'k', 'm', 'n', 'p', 'r', 'w', 'x', 'y',
-            '2', '3', '4', '5', '6', '7', '8', });
+    public OxCaptcha text() {
+        return text(5);
     }
     
-    public OxCaptcha textRandom(int length) {
-        return text(length, new char[] { 'a', 'b', 'c', 'd',
-            'e', 'f', 'g', 'h', 'k', 'm', 'n', 'p', 'r', 'w', 'x', 'y',
-            '2', '3', '4', '5', '6', '7', '8', });
-    }
-
-    public OxCaptcha text(int length, char[] chars) {
+    public OxCaptcha text(int length) {
         char[] t = new char[length];
         for (int i = 0; i < length; i++) {
-            t[i] = chars[RAND.nextInt(chars.length)];
+            t[i] = _charSet[RAND.nextInt(_charSet.length)];
         }
         return text(t);
     }

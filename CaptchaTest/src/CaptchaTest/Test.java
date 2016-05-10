@@ -29,7 +29,7 @@ public class Test {
         //c.backgroundSquiggles();
         
         // Add text
-        c.text(5, new char[] {'a', 'b', 'c', '1', '2', '3'});
+        c.text(5);
         //c.text("2a2ba");
         
         // Add noise
@@ -41,6 +41,7 @@ public class Test {
         //c.transformFishEye();
         //c.transformStretch();
         c.transformShear();
+        
         
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
