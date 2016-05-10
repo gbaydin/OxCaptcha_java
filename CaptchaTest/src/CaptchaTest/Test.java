@@ -21,11 +21,12 @@ public class Test {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        long startTime = System.currentTimeMillis();
         
         // Create Captcha container
         OxCaptcha c = new OxCaptcha(150, 50);
-        
+
+        long startTime = System.currentTimeMillis();
+
         // Create background
         c.backgroundFlat();
         //c.backgroundGradient();
@@ -33,8 +34,10 @@ public class Test {
         
         // Add text
         c.text(5);
+        //c.text(new char[] {'a', 'b', 'c'});
         //c.text("2a2ba");
-        
+        //c.text(new char[] {'a', 'b', 'c'}, new int[] {1,2,7}, new int[] {30,5,-10});
+                
         // Add noise
         c.noise();
         //c.noiseStraightLine();
@@ -46,14 +49,15 @@ public class Test {
         c.transformShear();
         
         // Get rendered image
-        BufferedImage img = c.getImage();
+        //BufferedImage img = c.getImage();
         
         // Get rendered image as a 2D array
         int[][] imgArray = c.getImageArray();
-        System.out.println(Arrays.toString(imgArray[40]));
         
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
+
+        //System.out.println(Arrays.toString(imgArray[40]));
         
         // Write rendered image to a png file
         System.out.println(Long.toString(elapsedTime) + " ms");

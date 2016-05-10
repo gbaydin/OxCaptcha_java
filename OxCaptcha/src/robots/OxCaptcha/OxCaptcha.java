@@ -26,6 +26,7 @@ import javax.imageio.ImageIO;
 import java.io.*;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -33,14 +34,17 @@ import java.util.Random;
 public class OxCaptcha {
     private static final Random RAND = new SecureRandom();
 
-    private List<Font> _fonts = new ArrayList<Font>();    
     private BufferedImage _img;
     private Graphics2D _img_g;
     private int _width;
     private int _height;
     private BufferedImage _bg;
-    private char[] _text = new char[] {};
-    private boolean _addBorder = false;
+    private char[] _chars = new char[] {};
+    private int _length = 0;
+    private int[] _xOffsets = new int[] {};
+    private int[] _yOffsets = new int[] {};
+    private Font _font = new Font("Arial", Font.PLAIN, 40);
+    private FontRenderContext _fontRenderContext;
     private char[] _charSet = new char[] { 'a', 'b', 'c', 'd',
             'e', 'f', 'g', 'h', 'k', 'm', 'n', 'p', 'r', 'w', 'x', 'y',
             '2', '3', '4', '5', '6', '7', '8', };
@@ -48,15 +52,19 @@ public class OxCaptcha {
     public OxCaptcha(int width, int height) {
         _img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         _img_g = _img.createGraphics();
-
-        _img_g.setRenderingHints(new RenderingHints(
+        _img_g.setFont(_font);
+        _fontRenderContext = _img_g.getFontRenderContext();
+       
+        RenderingHints hints = new RenderingHints(
                 RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON));
-        
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        hints.add(new RenderingHints(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY));
+        _img_g.setRenderingHints(hints);
+
         _width = width;
         _height = height;
 
-        _fonts.add(new Font("Arial", Font.PLAIN, 40));
     }
 
     public void setCharSet(char[] charSet) {
@@ -117,45 +125,44 @@ public class OxCaptcha {
         return text(t);
     }
     
-    public OxCaptcha text(char[] text) {
-        _text = text;
+    public OxCaptcha text(char[] chars) {
+        int xn[] = new int[chars.length];
+        int yn[] = new int[chars.length];
+        xn[0] = (int)(0.05 * _width);
+        yn[0] = (int)(0.75 * _height);
+        return text(chars, xn, yn);
+    }
+    
+    public OxCaptcha text(char[] chars, int[] xOffsets, int[] yOffsets) {
+        _xOffsets = xOffsets;
+        _yOffsets = yOffsets;
+        _chars = chars;
+        _length = _chars.length;
+
         renderText();
         return this;
     }
     
     private void renderText() {
 
-        Color color = Color.WHITE;
-        // The text will be rendered 25%/5% of the image height/width from the X and Y axes
-        double yOffset = 0.25;
-        double xOffset = 0.05;
-
-        RenderingHints hints = new RenderingHints(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        hints.add(new RenderingHints(RenderingHints.KEY_RENDERING,
-                RenderingHints.VALUE_RENDER_QUALITY));
-        _img_g.setRenderingHints(hints);
-
-        _img_g.setColor(color);
+        _img_g.setColor(Color.WHITE);
         
-        FontRenderContext frc = _img_g.getFontRenderContext();
-        int xBaseline = (int) Math.round(_width * xOffset);
-        int yBaseline =  _height - (int) Math.round(_height * yOffset);
-        
-        char[] chars = new char[1];
-        for (char c : _text) {
-            chars[0] = c;
+        System.out.println(Arrays.toString(_xOffsets));
+        System.out.println(Arrays.toString(_yOffsets));
+        int x = 0;
+        int y = 0;
+        char[] cc = new char[1];
+        for (int i = 0; i < _length; i++) {
+            x = x + _xOffsets[i];
+            y = y + _yOffsets[i];
+            cc[0] = _chars[i];
             
-            int choiceFont = RAND.nextInt(_fonts.size());
-            Font font = _fonts.get(choiceFont);
-            _img_g.setFont(font);
-            
-            GlyphVector gv = font.createGlyphVector(frc, chars);
-            _img_g.drawChars(chars, 0, chars.length, xBaseline, yBaseline);
+            System.out.println(Integer.toString(x) + ", " + Integer.toString(y));
+            _img_g.drawChars(cc, 0, 1, x, y);
 
+            GlyphVector gv = _font.createGlyphVector(_fontRenderContext, cc);
             int width = (int) gv.getVisualBounds().getWidth();
-            xBaseline = xBaseline + width + 5;
+            x = x + width + 1;
         }
     }
     
@@ -353,7 +360,7 @@ public class OxCaptcha {
     }
     
     public String getText() {
-        return new String(_text);
+        return new String(_chars);
     }
 
     public BufferedImage getImage() {
@@ -372,6 +379,7 @@ public class OxCaptcha {
         }
         return ret;
     }
+    
 
     public void writeImageToFile(String fileName) throws IOException {
         ImageIO.write(_img, "png", new File(fileName));
