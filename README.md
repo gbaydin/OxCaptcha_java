@@ -4,6 +4,8 @@ Java CAPTCHA generator without dependencies.
 ### Usage
 
 ```java
+import robots.OxCaptcha.*;
+
 // Create Captcha container
 OxCaptcha c = new OxCaptcha(150, 50);
 
