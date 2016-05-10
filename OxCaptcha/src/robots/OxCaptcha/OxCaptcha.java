@@ -133,6 +133,11 @@ public class OxCaptcha {
         return text(chars, xn, yn);
     }
     
+    // Add letters with per letter positioning
+    // Offsets give the position of each letter relative to the top right of the previous letter
+    // The offsets of the first letter are relative to the top left of the image
+    // x increases from left to right
+    // y increases from top to bottom
     public OxCaptcha text(char[] chars, int[] xOffsets, int[] yOffsets) {
         _xOffsets = xOffsets;
         _yOffsets = yOffsets;
