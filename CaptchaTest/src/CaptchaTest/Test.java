@@ -21,7 +21,7 @@ public class Test {
         long startTime = System.currentTimeMillis();
         
         // Create Captcha container
-        OxCaptcha c = new OxCaptcha(170, 50);
+        OxCaptcha c = new OxCaptcha(150, 50);
         
         // Create background
         c.backgroundFlat();
@@ -32,7 +32,6 @@ public class Test {
         c.text(5, new char[] {'a', 'b', 'c', '1', '2', '3'});
         //c.text("2a2ba");
         
-        
         // Add noise
         c.noise();
         //c.noiseStraightLine();
@@ -42,8 +41,7 @@ public class Test {
         //c.transformFishEye();
         //c.transformStretch();
         c.transformShear();
-        //c.transformDropShadow();
-
+        
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
         System.out.println(Long.toString(elapsedTime) + " ms");

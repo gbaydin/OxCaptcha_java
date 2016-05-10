@@ -1,10 +1,7 @@
 
 package robots.OxCaptcha;
 
-import com.jhlabs.image.BlockFilter;
-import com.jhlabs.image.RippleFilter;
-import com.jhlabs.image.ShadowFilter;
-import com.jhlabs.image.TransformFilter;
+
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -49,12 +46,15 @@ public class OxCaptcha {
     public OxCaptcha(int width, int height) {
         _img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         _img_g = _img.createGraphics();
+
+        _img_g.setRenderingHints(new RenderingHints(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON));
+        
         _width = width;
         _height = height;
 
-        _fonts.add(new Font("Arial", Font.BOLD, 40));
-        _fonts.add(new Font("Courier", Font.BOLD, 40));
-
+        _fonts.add(new Font("Arial", Font.PLAIN, 40));
     }
 
     public OxCaptcha backgroundFlat() {
@@ -162,7 +162,7 @@ public class OxCaptcha {
             _img_g.drawChars(chars, 0, chars.length, xBaseline, yBaseline);
 
             int width = (int) gv.getVisualBounds().getWidth();
-            xBaseline = xBaseline + width;
+            xBaseline = xBaseline + width + 5;
         }
         return this;
     }
@@ -205,9 +205,6 @@ public class OxCaptcha {
         // copies points from tmp to pts
         System.arraycopy(tmp, 0, pts, 0, i);
 
-        _img_g.setRenderingHints(new RenderingHints(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON));
 
         _img_g.setColor(color);
 
@@ -272,30 +269,30 @@ public class OxCaptcha {
     }
     
     public OxCaptcha transformFishEye() {
-        Color hColor = Color.BLACK;
-        Color vColor = Color.BLACK;
+//        Color hColor = Color.BLACK;
+//        Color vColor = Color.BLACK;
         float thickness = 1.0f;
         
         _img_g.setStroke(new BasicStroke(thickness));
         
-        int hstripes = _height / 7;
-        int vstripes = _width / 7;
-
-        // Calculate space between lines
-        int hspace = _height / (hstripes + 1);
-        int vspace = _width / (vstripes + 1);
-
-        // Draw the horizontal stripes
-        for (int i = hspace; i < _height; i = i + hspace) {
-            _img_g.setColor(hColor);
-            _img_g.drawLine(0, i, _width, i);
-        }
-
-        // Draw the vertical stripes
-        for (int i = vspace; i < _width; i = i + vspace) {
-            _img_g.setColor(vColor);
-            _img_g.drawLine(i, 0, i, _height);
-        }
+//        int hstripes = _height / 7;
+//        int vstripes = _width / 7;
+//
+//        // Calculate space between lines
+//        int hspace = _height / (hstripes + 1);
+//        int vspace = _width / (vstripes + 1);
+//
+//        // Draw the horizontal stripes
+//        for (int i = hspace; i < _height; i = i + hspace) {
+//            _img_g.setColor(hColor);
+//            _img_g.drawLine(0, i, _width, i);
+//        }
+//
+//        // Draw the vertical stripes
+//        for (int i = vspace; i < _width; i = i + vspace) {
+//            _img_g.setColor(vColor);
+//            _img_g.drawLine(i, 0, i, _height);
+//        }
 
         // Create a pixel array of the original image.
         // we need this later to do the operations on..
@@ -336,37 +333,6 @@ public class OxCaptcha {
         return this;
     }
     
-    public OxCaptcha transformDropShadow() {
-        int radius = 3;
-	int opacity = 75;        
-        ShadowFilter sFilter = new ShadowFilter();
-        sFilter.setRadius(radius);
-        sFilter.setOpacity(opacity);
-        applyFilter(_img, sFilter);        
-        
-        return this;
-    }
-    
-    public OxCaptcha transformBlock() {
-        int blockSize = 3;
-        BlockFilter filter = new BlockFilter();
-        filter.setBlockSize(blockSize);
-        applyFilter(_img, filter); 
-        return this;
-    }
-
-    public OxCaptcha transformRipple() {
-        RippleFilter filter = new RippleFilter();
-        filter.setWaveType(RippleFilter.SINGLEFRAME);
-        filter.setXAmplitude(2.6f);
-        filter.setYAmplitude(1.7f);
-        filter.setXWavelength(15);
-        filter.setYWavelength(5);
-        filter.setEdgeAction(TransformFilter.RANDOMPIXELORDER);
-        applyFilter(_img, filter);        
-        return this;
-    }
-    
     public OxCaptcha transformStretch() {
         double xScale = 3.0;
         double yScale = 1.0;
@@ -380,10 +346,16 @@ public class OxCaptcha {
     }
     
     public OxCaptcha transformShear() {
-        Color color = Color.GRAY;
+        Color color = Color.BLACK;
+        
+        int xPeriod = RAND.nextInt(5) + 5;
+        int xPhase = RAND.nextInt(5) + 2;
+        int yPeriod = RAND.nextInt(3) + 10;
+        int yPhase = 7;
+        
         Graphics2D g = _img.createGraphics();
-        shearX(g, color, _width, _height);
-        shearY(g, color, _width, _height);
+        shearX(g, color, xPeriod, xPhase, _width, _height);
+        shearY(g, color, yPeriod, yPhase, _width, _height);
         g.dispose();
         return this;
     }
@@ -424,12 +396,9 @@ public class OxCaptcha {
             //g.dispose();
     }
     
-    private void shearX(Graphics2D g, Color color, int w1, int h1) {
-        int period = RAND.nextInt(10) + 5;
-
+    private void shearX(Graphics2D g, Color color, int period, int phase, int w1, int h1) {
         boolean borderGap = true;
         int frames = 15;
-        int phase = RAND.nextInt(5) + 2;
 
         for (int i = 0; i < h1; i++) {
             double d = (period >> 1)
@@ -444,12 +413,11 @@ public class OxCaptcha {
         }
     }
 
-    private void shearY(Graphics2D g, Color color, int w1, int h1) {
-        int period = RAND.nextInt(30) + 10; // 50;
-
+    private void shearY(Graphics2D g, Color color, int period, int phase, int w1, int h1) {
+         
         boolean borderGap = true;
         int frames = 15;
-        int phase = 7;
+
         for (int i = 0; i < w1; i++) {
             double d = (period >> 1)
                     * Math.sin((float) i / period
