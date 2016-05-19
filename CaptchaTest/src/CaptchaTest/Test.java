@@ -47,6 +47,8 @@ public class Test {
         //c.noise();
         //c.noiseStraightLine();
         //c.noiseCurvedLine();
+        c.noiseSaltPepper();
+        //c.noiseSaltPepper(0.05f, 0.05f);
         
         // Apply transformation
         //c.transformFishEye();

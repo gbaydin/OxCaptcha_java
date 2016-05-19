@@ -235,6 +235,7 @@ public class OxCaptcha {
         
         BufferedImageOp op = new ConvolveOp(kernel);
         _img = op.filter(_img, null);
+        _img_g = _img.createGraphics();
         return this;
     }    
 
@@ -332,6 +333,36 @@ public class OxCaptcha {
         yPoints[3] = y2 + dy;
 
         _img_g.fillPolygon(xPoints, yPoints, 4);
+        return this;
+    }
+    
+    public OxCaptcha noiseSaltPepper() {
+        return noiseSaltPepper(0.05f, 0.05f);
+    }
+    
+    public OxCaptcha noiseSaltPepper(float salt, float pepper) {
+        int s = (int) (_height * _width * salt);
+        int p = (int) (_height * _width * pepper);
+        
+        Color w = new Color(255, 255, 255);
+        Color b = new Color(0, 0, 0);
+        
+        _img_g.setColor(Color.WHITE);
+        
+        for (int i = 0; i < s; i++)
+        {
+            int x = (int) (RAND.nextFloat() * _width);
+            int y = (int) (RAND.nextFloat() * _height);
+            
+            _img_g.drawLine(x, y, x, y);
+        }
+        _img_g.setColor(Color.BLACK);
+        for (int i = 0; i < p; i++)
+        {
+            int x = (int) (RAND.nextFloat() * _width);
+            int y = (int) (RAND.nextFloat() * _height);
+            _img_g.drawLine(x, y, x, y);
+        }
         return this;
     }
 

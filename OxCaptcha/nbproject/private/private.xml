@@ -2,25 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/DefaultWordRenderer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/SquigglesBackgroundProducer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/BlockGimpyRenderer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/WordRenderer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/FlatColorBackgroundProducer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/GimpyRenderer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/NumbersTextProducer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/RippleGimpyRenderer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/ImageUtil.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/TransparentBackgroundProducer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/GradiatedBackgroundProducer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/StretchGimpyRenderer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/NoiseProducer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/DefaultTextProducer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/DropShadowGimpyRenderer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/ShearGimpyRenderer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/TextProducer.java</file>
-            <file>file:/C:/Users/gunes/Documents/NetBeansProjects/OxCaptcha/src/robots/OxCaptcha/OxCaptcha.java</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>
