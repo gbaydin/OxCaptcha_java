@@ -33,20 +33,25 @@ public class Test {
         //c.backgroundSquiggles();
         
         // Add text
-        c.text(5);
+        //c.text(5);
         //c.text(new char[] {'a', 'b', 'c'});
         //c.text("2a2ba");
-        //c.text(new char[] {'a', 'b', 'c'}, new int[] {1,2,7}, new int[] {30,5,-10});
-                
+        c.text(new char[] {'a', 'b', 'c'}, new int[] {1,2,7}, new int[] {30,5,-10});
+
+        // Add blur, optional parameter for 
+        //c.blur();
+        c.gaussianBlur5x5s2();
+        //c.blur(5);
+        
         // Add noise
-        c.noise();
+        //c.noise();
         //c.noiseStraightLine();
         //c.noiseCurvedLine();
         
         // Apply transformation
         //c.transformFishEye();
         //c.transformStretch();
-        c.transformShear();
+        //c.transformShear();
         
         // Get rendered image
         //BufferedImage img = c.getImage();
@@ -62,7 +67,7 @@ public class Test {
         // Write rendered image to a png file
         System.out.println(Long.toString(elapsedTime) + " ms");
         try {
-            c.writeImageToFile("test.png");
+            c.writeImageToFile("testt.png");
         }
         catch (IOException e) {
             e.printStackTrace();

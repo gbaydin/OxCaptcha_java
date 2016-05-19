@@ -20,8 +20,11 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
+import java.awt.image.Kernel;
+import java.awt.image.ConvolveOp;
 import javax.imageio.ImageIO;
 import java.io.*;
 import java.security.SecureRandom;
@@ -172,6 +175,69 @@ public class OxCaptcha {
         }
     }
     
+    public OxCaptcha blur() {
+        return blur(3);
+    }
+    
+    public OxCaptcha blur(int kernelSize) {
+        
+        float[] k = new float[kernelSize * kernelSize];
+        for (int i = 0; i < kernelSize; i++) {
+            k[i] = 1f / ((float) (kernelSize));
+        }
+        Kernel kernel = new Kernel(kernelSize, kernelSize, k);
+        
+        BufferedImageOp op = new ConvolveOp(kernel);
+        _img = op.filter(_img, null);
+        return this;
+    }
+    
+    public OxCaptcha gaussianBlur3x3() {
+        
+        float[] k = new float[] {
+            1f/16f, 1f/8f, 1f/16f, 
+            1f/8f, 1f/4f, 1f/8f, 
+            1f/16f, 1f/8f, 1f/16f};
+
+        Kernel kernel = new Kernel(3, 3, k);
+        
+        BufferedImageOp op = new ConvolveOp(kernel);
+        _img = op.filter(_img, null);
+        return this;
+    }
+    
+    public OxCaptcha gaussianBlur5x5s1() {
+        
+        float[] k = new float[] {
+            1f/273f,  4f/273f,  7f/273f,  4f/273f, 1f/273f,
+            4f/273f, 16f/273f, 26f/273f, 16f/273f, 4f/273f,
+            7f/273f, 26f/273f, 41f/273f, 26f/273f, 7f/273f,
+            4f/273f, 16f/273f, 26f/273f, 16f/273f, 4f/273f,
+            1f/273f,  4f/273f,  7f/273f,  4f/273f, 1f/273f};
+
+        Kernel kernel = new Kernel(5, 5, k);
+        
+        BufferedImageOp op = new ConvolveOp(kernel);
+        _img = op.filter(_img, null);
+        return this;
+    }    
+
+    public OxCaptcha gaussianBlur5x5s2() {
+        
+        float[] k = new float[] {
+            0.023528f, 0.033969f, 0.038393f, 0.033969f, 0.023528f,
+            0.033969f, 0.049045f, 0.055432f, 0.049045f, 0.033969f,
+            0.038393f, 0.055432f, 0.062651f, 0.055432f, 0.038393f,
+            0.033969f, 0.049045f, 0.055432f, 0.049045f, 0.033969f,
+            0.023528f, 0.033969f, 0.038393f, 0.033969f, 0.023528f};
+
+        Kernel kernel = new Kernel(5, 5, k);
+        
+        BufferedImageOp op = new ConvolveOp(kernel);
+        _img = op.filter(_img, null);
+        return this;
+    }    
+
     public OxCaptcha noise() {
         return noiseCurvedLine();
     }
