@@ -40,14 +40,14 @@ public class Test {
 
         // Add blur, optional parameter for 
         //c.blur();
-        c.gaussianBlur5x5s2();
+        //c.gaussianBlur5x5s2();
         //c.blur(5);
         
         // Add noise
         //c.noise();
         //c.noiseStraightLine();
         //c.noiseCurvedLine();
-        c.noiseSaltPepper();
+        //c.noiseSaltPepper();
         //c.noiseSaltPepper(0.05f, 0.05f);
         
         // Apply transformation

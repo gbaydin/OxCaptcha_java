@@ -189,6 +189,9 @@ public class OxCaptcha {
         
         BufferedImageOp op = new ConvolveOp(kernel);
         _img = op.filter(_img, null);
+        _img_g = _img.createGraphics();
+        _img_g.setFont(_font);
+        
         return this;
     }
     
@@ -203,6 +206,9 @@ public class OxCaptcha {
         
         BufferedImageOp op = new ConvolveOp(kernel);
         _img = op.filter(_img, null);
+        _img_g = _img.createGraphics();
+        _img_g.setFont(_font);
+        
         return this;
     }
     
@@ -219,6 +225,9 @@ public class OxCaptcha {
         
         BufferedImageOp op = new ConvolveOp(kernel);
         _img = op.filter(_img, null);
+        _img_g = _img.createGraphics();
+        _img_g.setFont(_font);
+       
         return this;
     }    
 
@@ -236,6 +245,7 @@ public class OxCaptcha {
         BufferedImageOp op = new ConvolveOp(kernel);
         _img = op.filter(_img, null);
         _img_g = _img.createGraphics();
+        _img_g.setFont(_font);
         return this;
     }    
 
@@ -337,7 +347,7 @@ public class OxCaptcha {
     }
     
     public OxCaptcha noiseSaltPepper() {
-        return noiseSaltPepper(0.05f, 0.05f);
+        return noiseSaltPepper(0.02f, 0.02f);
     }
     
     public OxCaptcha noiseSaltPepper(float salt, float pepper) {
