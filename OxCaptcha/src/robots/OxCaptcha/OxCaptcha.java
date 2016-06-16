@@ -525,8 +525,8 @@ public class OxCaptcha {
     public int[] getImageArray1D() {
         int ret[] = new int[_height * _width];
         int i = 0;
-        for (int x = 0; x < _width - 1; x++){
-            for (int y = 0; y < _height - 1; y++)
+        for (int y = 0; y < _height - 1; y++)
+            for (int x = 0; x < _width - 1; x++){
             {
                 int p = _img.getRGB(x, y);
                 int red = (p >> 16) & 0xff;
