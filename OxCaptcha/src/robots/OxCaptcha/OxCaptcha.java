@@ -174,7 +174,7 @@ public class OxCaptcha {
     }
 
     private void renderText() {
-        renderText(OxCaptcha.RELATIVE)
+        renderText(OxCaptcha.RELATIVE);
     }
 
     private void renderText(int mode) {
