@@ -33,15 +33,11 @@ public class Test {
         //c.backgroundSquiggles();
         
         // Add text
-        //c.text(5);
+        c.text(5);
         //c.text(new char[] {'a', 'b', 'c'});
         //c.text("2a2ba");
-        c.text(new char[] {'a', 'b', 'c'}, new int[] {1,2,7}, new int[] {30,5,-10});
+        //c.text(new char[] {'a', 'b', 'c'}, new int[] {1,2,7}, new int[] {30,5,-10});
 
-        // Add blur, optional parameter for 
-        //c.blur();
-        //c.gaussianBlur5x5s2();
-        //c.blur(5);
         
         // Add noise
         //c.noise();
@@ -52,24 +48,29 @@ public class Test {
         
         // Apply transformation
         //c.transformFishEye();
-        //c.transformStretch();
-        //c.transformShear();
+        //c.transformStretch(1.1, 1.0);
+        c.transformShear();
+
+        // Add blur
+        //c.blur();
+        c.blurGaussian5x5s2();
+        //c.blur(5);
         
         // Get rendered image
         //BufferedImage img = c.getImage();
         
         // Get rendered image as a 2D array
-        int[][] imgArray = c.getImageArray();
+        int[] imgArray = c.getImageArray1D();
         
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
 
-        //System.out.println(Arrays.toString(imgArray[40]));
+        System.out.println(Arrays.toString(imgArray));
         
         // Write rendered image to a png file
         System.out.println(Long.toString(elapsedTime) + " ms");
         try {
-            c.writeImageToFile("testt.png");
+            c.writeImageToFile("test.png");
         }
         catch (IOException e) {
             e.printStackTrace();

@@ -223,8 +223,8 @@ public class OxCaptcha {
 
         return this;
     }
-
-    public OxCaptcha gaussianBlur3x3() {
+    
+    public OxCaptcha blurGaussian3x3() {
 
         float[] k = new float[] {
             1f/16f, 1f/8f, 1f/16f,
@@ -241,7 +241,7 @@ public class OxCaptcha {
         return this;
     }
 
-    public OxCaptcha gaussianBlur5x5s1() {
+    public OxCaptcha blurGaussian5x5s1() {
 
         float[] k = new float[] {
             1f/273f,  4f/273f,  7f/273f,  4f/273f, 1f/273f,
@@ -260,7 +260,7 @@ public class OxCaptcha {
         return this;
     }
 
-    public OxCaptcha gaussianBlur5x5s2() {
+    public OxCaptcha blurGaussian5x5s2() {
 
         float[] k = new float[] {
             0.023528f, 0.033969f, 0.038393f, 0.033969f, 0.023528f,
@@ -475,29 +475,30 @@ public class OxCaptcha {
     }
 
     public OxCaptcha transformStretch() {
-        double xScale = 3.0;
-        double yScale = 1.0;
-        Graphics2D g = _img.createGraphics();
+        double xScale = RAND.nextDouble() * 2;
+        double yScale = RAND.nextDouble() * 2;
+        return transformStretch(xScale, yScale);
+    }
+    
+    public OxCaptcha transformStretch(double xScale, double yScale) {
         AffineTransform at = new AffineTransform();
         at.scale(xScale, yScale);
-//		RenderingHints hints = new RenderingHints(RenderingHints.KEY_INTERPOLATION,
-//                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        g.drawRenderedImage(_img, at);
+        _img_g.drawRenderedImage(_img, at);
         return this;
     }
 
     public OxCaptcha transformShear() {
-        Color color = Color.BLACK;
-
         int xPeriod = RAND.nextInt(5) + 5;
         int xPhase = RAND.nextInt(5) + 2;
         int yPeriod = RAND.nextInt(3) + 10;
         int yPhase = 7;
 
-        Graphics2D g = _img.createGraphics();
-        shearX(g, color, xPeriod, xPhase, _width, _height);
-        shearY(g, color, yPeriod, yPhase, _width, _height);
-        g.dispose();
+        return transformShear(xPeriod, xPhase, yPeriod, yPhase);
+    }
+    
+    public OxCaptcha transformShear(int xPeriod, int xPhase, int yPeriod, int yPhase) {
+        shearX(_img_g, xPeriod, xPhase, _width, _height);
+        shearY(_img_g, yPeriod, yPhase, _width, _height);
         return this;
     }
 
@@ -566,7 +567,7 @@ public class OxCaptcha {
             //g.dispose();
     }
 
-    private void shearX(Graphics2D g, Color color, int period, int phase, int w1, int h1) {
+    private void shearX(Graphics2D g, int period, int phase, int w1, int h1) {
         boolean borderGap = true;
         int frames = 15;
 
@@ -576,14 +577,14 @@ public class OxCaptcha {
                             + (6.2831853071795862D * phase) / frames);
             g.copyArea(0, i, w1, 1, (int) d, 0);
             if (borderGap) {
-                g.setColor(color);
+                g.setColor(Color.BLACK);
                 g.drawLine((int) d, i, 0, i);
                 g.drawLine((int) d + w1, i, w1, i);
             }
         }
     }
 
-    private void shearY(Graphics2D g, Color color, int period, int phase, int w1, int h1) {
+    private void shearY(Graphics2D g, int period, int phase, int w1, int h1) {
 
         boolean borderGap = true;
         int frames = 15;
@@ -594,7 +595,7 @@ public class OxCaptcha {
                             + (6.2831853071795862D * phase) / frames);
             g.copyArea(i, 0, 1, h1, 0, (int) d);
             if (borderGap) {
-                g.setColor(color);
+                g.setColor(Color.BLACK);
                 g.drawLine(i, (int) d, i, 0);
                 g.drawLine(i, (int) d + h1, i, h1);
             }
