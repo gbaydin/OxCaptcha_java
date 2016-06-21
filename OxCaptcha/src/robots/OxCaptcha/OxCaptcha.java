@@ -570,7 +570,34 @@ public class OxCaptcha {
         }
         return this;
     }
+    
+    public void write1DArrayToFile(int[] pixels, int width, int height, String fileName) throws IOException {
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        int i = 0;
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                img.setRGB(x, y, new Color(pixels[i++]).getRGB());
+            }
+        }
+        ImageIO.write(img, "png", new File(fileName));
+    }
 
+    public void write2DArrayToFile(int[][] pixels, String fileName) throws IOException {
+        int height = pixels.length;
+        int width = pixels[0].length;
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                img.setRGB(x, y, new Color(pixels[x][y]).getRGB());
+            }
+        }
+        ImageIO.write(img, "png", new File(fileName));
+    }
+        
     public String getText() {
         return new String(_chars);
     }
