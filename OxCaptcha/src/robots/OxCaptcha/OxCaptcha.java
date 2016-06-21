@@ -91,6 +91,11 @@ public class OxCaptcha {
         _img_g.fillRect(0,0, _width, _height);
         return this;
     }
+    
+    public OxCaptcha foreground(Color color) {
+        _fg_color = color;
+        return this;
+    }
 
     public OxCaptcha text() {
         return text(5);
@@ -105,20 +110,36 @@ public class OxCaptcha {
     }
     
     public OxCaptcha text(String chars) {
-        int l = chars.length();
-        char[] t = new char[l];
-        chars.getChars(0, l - 1, t, 0);
-        return text(t);
+        return text(chars, (int)(0.05 * _width), (int)(0.75 * _height), 0);
+    }
+
+    public OxCaptcha text(String chars, int kerning) {
+        return text(chars, (int)(0.05 * _width), (int)(0.75 * _height), kerning);
     }
 
     public OxCaptcha text(char[] chars) {
-        int xn[] = new int[chars.length];
-        int yn[] = new int[chars.length];
-        xn[0] = (int)(0.05 * _width);
-        yn[0] = (int)(0.75 * _height);
-        return text(chars, xn, yn);
+        return text(chars, (int)(0.05 * _width), (int)(0.75 * _height), 0);
     }
 
+    public OxCaptcha text(String chars, int xOffset, int yOffset, int kerning) {
+        int l = chars.length();
+        char[] t = new char[l];
+        chars.getChars(0, l, t, 0);
+        return text(t, xOffset, yOffset, kerning);
+    }
+    
+    public OxCaptcha text(char[] chars, int xOffset, int yOffset, int kerning) {
+        int xn[] = new int[chars.length];
+        for (int i = 0; i < chars.length; i++)
+        {
+            xn[i] = kerning;
+        }
+        int yn[] = new int[chars.length];
+        xn[0] = xOffset;
+        yn[0] = yOffset;
+        return text(chars, xn, yn);
+    }
+    
     // Add letters with per letter positioning
     // Offsets give the position of each letter relative to the top right of the previous letter
     // The offsets of the first letter are relative to the top left of the image
@@ -203,39 +224,37 @@ public class OxCaptcha {
         return this;
     }
     
-    public ConvolveOp gbConvolve(int radius, float sigma, boolean horizontal) {
-        if (radius < 1) {
-            throw new IllegalArgumentException("Radius must be >= 1");
-        }
-
+    private ConvolveOp gbConvolve(int radius, float sigma, boolean horizontal) {
         int size = radius * 2 + 1;
-        float[] data = new float[size];
-
-        float twoSigmaSquare = 2.0f * sigma * sigma;
-        float sigmaRoot = (float) Math.sqrt(twoSigmaSquare * Math.PI);
-        float total = 0.0f;
+        float[] vals = new float[size];
+        float twoSigmaSq = 2.0f * sigma * sigma;
+        float sqrtPiTwoSigmaSq = (float) Math.sqrt(twoSigmaSq * Math.PI);
+        float sum = 0.0f;
 
         for (int i = -radius; i <= radius; i++) {
             float distance = i * i;
             int index = i + radius;
-            data[index] = (float) Math.exp(-distance / twoSigmaSquare) / sigmaRoot;
-            total += data[index];
+            vals[index] = (float) Math.exp(-distance / twoSigmaSq) / sqrtPiTwoSigmaSq;
+            sum += vals[index];
         }
-
-        for (int i = 0; i < data.length; i++) {
-            data[i] /= total;
+        for (int i = 0; i < size; i++) {
+            vals[i] /= sum;
         }
 
         Kernel kernel = null;
         if (horizontal) {
-            kernel = new Kernel(size, 1, data);
-        } else {
-            kernel = new Kernel(1, size, data);
+            kernel = new Kernel(size, 1, vals);
+        } 
+        else {
+            kernel = new Kernel(1, size, vals);
         }
         return new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
     }
         
     public OxCaptcha blurGaussian(int radius, double sigma) {
+        if (radius < 1) {
+            throw new IllegalArgumentException("radius must be greater than 1");
+        }
         BufferedImageOp op = gbConvolve(radius, (float)sigma, true);
         _img = op.filter(_img, null);
 
@@ -395,7 +414,7 @@ public class OxCaptcha {
     }
 
     public OxCaptcha noiseSaltPepper() {
-        return noiseSaltPepper(0.02f, 0.02f);
+        return noiseSaltPepper(0.01f, 0.01f);
     }
 
     public OxCaptcha noiseSaltPepper(float salt, float pepper) {
@@ -405,6 +424,8 @@ public class OxCaptcha {
         Color w = new Color(255, 255, 255);
         Color b = new Color(0, 0, 0);
 
+        _img_g.setStroke(new BasicStroke(1));
+                
         _img_g.setColor(Color.WHITE);
 
         for (int i = 0; i < s; i++)
@@ -425,7 +446,7 @@ public class OxCaptcha {
     }
 
     public OxCaptcha distortion() {
-        return distortionFishEye();
+        return distortionShear();
     }
 
     public OxCaptcha distortionFishEye() {
@@ -507,10 +528,10 @@ public class OxCaptcha {
     }
 
     public OxCaptcha distortionShear() {
-        int xPeriod = RAND.nextInt(5) + 5;
-        int xPhase = RAND.nextInt(5) + 5;
-        int yPeriod = RAND.nextInt(5) + 5;
-        int yPhase = RAND.nextInt(5) + 5;
+        int xPeriod = RAND.nextInt(10) + 5;
+        int xPhase = RAND.nextInt(8) + 5;
+        int yPeriod = RAND.nextInt(10) + 5;
+        int yPhase = RAND.nextInt(8) + 5;
 
         return distortionShear(xPeriod, xPhase, yPeriod, yPhase);
     }
@@ -518,6 +539,35 @@ public class OxCaptcha {
     public OxCaptcha distortionShear(int xPeriod, int xPhase, int yPeriod, int yPhase) {
         shearX(_img_g, xPeriod, xPhase, _width, _height);
         shearY(_img_g, yPeriod, yPhase, _width, _height);
+        return this;
+    }
+    
+    public OxCaptcha normalize() {
+        int p[] = getImageArray1D();
+        int pmin = p[0];
+        int pmax = p[0];
+        for (int i = 0 ; i < p.length; i++)
+        {
+            if (p[i] < pmin) {
+                pmin = p[i];
+            }
+            else if (p[i] > pmax) {
+                pmax = p[i];
+            }
+        }
+        int prange = pmax - pmin;
+        
+        if (prange > 0) {
+            int i = 0;
+            for (int y = 0; y < _height; y++)
+            {
+                for (int x = 0; x < _width; x++)
+                {
+                    int pp = 255 * (p[i++] - pmin) / prange;
+                    _img.setRGB(x, y, new Color(pp, pp, pp).getRGB());
+                }
+            }
+        }
         return this;
     }
 
@@ -531,12 +581,13 @@ public class OxCaptcha {
 
     public int[][] getImageArray2D() {
         int ret[][] = new int[_height][_width];
-        for (int x = 0; x < _width - 1; x++){
-            for (int y = 0; y < _height - 1; y++)
+        for (int x = 0; x < _width; x++){
+            for (int y = 0; y < _height; y++)
             {
                 int p = _img.getRGB(x, y);
                 int red = (p >> 16) & 0xff;
                 ret[y][x] = red;
+                
             }
         }
         return ret;
@@ -545,8 +596,8 @@ public class OxCaptcha {
     public int[] getImageArray1D() {
         int ret[] = new int[_height * _width];
         int i = 0;
-        for (int y = 0; y < _height - 1; y++)
-            for (int x = 0; x < _width - 1; x++){
+        for (int y = 0; y < _height; y++)
+            for (int x = 0; x < _width; x++){
             {
                 int p = _img.getRGB(x, y);
                 int red = (p >> 16) & 0xff;
@@ -586,38 +637,25 @@ public class OxCaptcha {
             //g.dispose();
     }
 
-    private void shearX(Graphics2D g, int period, int phase, int w1, int h1) {
-        boolean borderGap = true;
+    private void shearX(Graphics2D g, int period, int phase, int width, int height) {
         int frames = 15;
 
-        for (int i = 0; i < h1; i++) {
+        for (int i = 0; i < height; i++) {
             double d = (period >> 1)
                     * Math.sin((double) i / (double) period
                             + (6.2831853071795862D * phase) / frames);
-            g.copyArea(0, i, w1, 1, (int) d, 0);
-            if (borderGap) {
-                g.setColor(_bg_color);
-                g.drawLine((int) d, i, 0, i);
-                g.drawLine((int) d + w1, i, w1, i);
-            }
+            g.copyArea(0, i, width, 1, (int) d, 0);
         }
     }
 
-    private void shearY(Graphics2D g, int period, int phase, int w1, int h1) {
-
-        boolean borderGap = true;
+    private void shearY(Graphics2D g, int period, int phase, int width, int height) {
         int frames = 15;
 
-        for (int i = 0; i < w1; i++) {
+        for (int i = 0; i < width; i++) {
             double d = (period >> 1)
                     * Math.sin((float) i / period
                             + (6.2831853071795862D * phase) / frames);
-            g.copyArea(i, 0, 1, h1, 0, (int) d);
-            if (borderGap) {
-                g.setColor(_bg_color);
-                g.drawLine(i, (int) d, i, 0);
-                g.drawLine(i, (int) d + h1, i, h1);
-            }
+            g.copyArea(i, 0, 1, height, 0, (int) d);
         }
     }
 }

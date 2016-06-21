@@ -24,7 +24,7 @@ public class Test {
         // TODO code application logic here
         
         // Create Captcha container
-        OxCaptcha c = new OxCaptcha(150, 50);
+        OxCaptcha c = new OxCaptcha(200, 50);
 
         long startTime = System.currentTimeMillis();
 
@@ -32,29 +32,32 @@ public class Test {
         c.background();
         
         // Add text
-        c.text(5);
-        //c.text(new char[] {'a', 'b', 'c'});
-        //c.text("2a2ba");
+//        c.text(7);
+        c.text("Aabgt34BS", 3, 40, -3);
+//        c.text(new char[] {'a', 'b', 'c'}, 0, 30, -2);
+//        c.text("2a2ba", 2);
         //c.text(new char[] {'a', 'b', 'c'}, new int[] {1,2,7}, new int[] {30,5,-10});
 
         
-        // Add noise
-        //c.noiseStraightLine();
-        //c.noiseCurvedLine();
-        //c.noiseSaltPepper();
-        //c.noiseSaltPepper(0.05f, 0.05f);
-        
-        // Apply transformation
+        // Apply distortion
         //c.distortionFishEye();
         //c.distortionStretch(1.4, 1.1);
-//        c.distortionShear();
-
+//        c.distortionShear(2, 15, 10, 15);
+        c.distortionShear();
+        
         // Add blur
         //c.blur(10);
-        c.blurGaussian(2, 1.75);
+        c.blurGaussian(2, 2.);
         //c.blurGaussian5x5s1();
         //c.blurGaussian5x5s2();
 
+        c.normalize();
+         
+        // Add noise
+        //c.noiseStraightLine();
+//        c.noiseCurvedLine();
+        c.noiseSaltPepper();
+        //c.noiseSaltPepper(0.05f, 0.05f);
         
         // Get rendered image
         //BufferedImage img = c.getImage();
@@ -62,13 +65,13 @@ public class Test {
         // Get rendered image as a 2D array
         //int[] imgArray = c.getImageArray1D();
         
-        //long stopTime = System.currentTimeMillis();
-        //long elapsedTime = stopTime - startTime;
+        long stopTime = System.currentTimeMillis();
+        long elapsedTime = stopTime - startTime;
 
         //System.out.println(Arrays.toString(imgArray));
         
         // Write rendered image to a png file
-        //System.out.println(Long.toString(elapsedTime) + " ms");
+        System.out.println(Long.toString(elapsedTime) + " ms");
         try {
             c.writeImageToFile("test.png");
         }
