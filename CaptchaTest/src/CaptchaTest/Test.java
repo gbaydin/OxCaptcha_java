@@ -5,6 +5,7 @@
  */
 package CaptchaTest;
 
+import java.awt.Color;
 import robots.OxCaptcha.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -28,9 +29,7 @@ public class Test {
         long startTime = System.currentTimeMillis();
 
         // Create background
-        c.backgroundFlat();
-        //c.backgroundGradient();
-        //c.backgroundSquiggles();
+        c.background();
         
         // Add text
         c.text(5);
@@ -40,35 +39,36 @@ public class Test {
 
         
         // Add noise
-        //c.noise();
         //c.noiseStraightLine();
         //c.noiseCurvedLine();
         //c.noiseSaltPepper();
         //c.noiseSaltPepper(0.05f, 0.05f);
         
         // Apply transformation
-        //c.transformFishEye();
-        //c.transformStretch(1.1, 1.0);
-        c.transformShear();
+        //c.distortionFishEye();
+        //c.distortionStretch(1.4, 1.1);
+//        c.distortionShear();
 
         // Add blur
-        //c.blur();
-        c.blurGaussian5x5s2();
-        //c.blur(5);
+        //c.blur(10);
+        c.blurGaussian(2, 1.75);
+        //c.blurGaussian5x5s1();
+        //c.blurGaussian5x5s2();
+
         
         // Get rendered image
         //BufferedImage img = c.getImage();
         
         // Get rendered image as a 2D array
-        int[] imgArray = c.getImageArray1D();
+        //int[] imgArray = c.getImageArray1D();
         
-        long stopTime = System.currentTimeMillis();
-        long elapsedTime = stopTime - startTime;
+        //long stopTime = System.currentTimeMillis();
+        //long elapsedTime = stopTime - startTime;
 
-        System.out.println(Arrays.toString(imgArray));
+        //System.out.println(Arrays.toString(imgArray));
         
         // Write rendered image to a png file
-        System.out.println(Long.toString(elapsedTime) + " ms");
+        //System.out.println(Long.toString(elapsedTime) + " ms");
         try {
             c.writeImageToFile("test.png");
         }

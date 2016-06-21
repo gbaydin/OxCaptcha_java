@@ -44,6 +44,8 @@ public class OxCaptcha {
     private int _width;
     private int _height;
     private BufferedImage _bg;
+    private Color _bg_color;
+    private Color _fg_color;
     private char[] _chars = new char[] {};
     private int _length = 0;
     private int[] _xOffsets = new int[] {};
@@ -61,7 +63,9 @@ public class OxCaptcha {
         _img_g = _img.createGraphics();
         _img_g.setFont(_font);
         _fontRenderContext = _img_g.getFontRenderContext();
-
+        _bg_color = Color.WHITE;
+        _fg_color = Color.BLACK;
+        
         RenderingHints hints = new RenderingHints(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
@@ -78,45 +82,13 @@ public class OxCaptcha {
         _charSet = charSet;
     }
 
-    public OxCaptcha backgroundFlat() {
-        return backgroundFlat(Color.BLACK);
+    public OxCaptcha background() {
+        return background(_bg_color);
     }
-    public OxCaptcha backgroundFlat(Color color) {
+    public OxCaptcha background(Color color) {
+        _bg_color = color;
         _img_g.setPaint(color);
         _img_g.fillRect(0,0, _width, _height);
-        return this;
-    }
-
-    public OxCaptcha backgroundGradient() {
-        return backgroundGradient(Color.DARK_GRAY, Color.BLACK);
-    }
-    public OxCaptcha backgroundGradient(Color color1, Color color2) {
-        GradientPaint ytow = new GradientPaint(0, 0, color1, _width, _height, color2);
-        _img_g.setPaint(ytow);
-        _img_g.fillRect(0, 0, _width, _height);
-        return this;
-    }
-
-    public OxCaptcha backgroundSquiggles() {
-        BasicStroke bs = new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
-                BasicStroke.JOIN_MITER, 2.0f, new float[] { 2.0f, 2.0f }, 0.0f);
-        _img_g.setStroke(bs);
-        AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
-                0.75f);
-        _img_g.setComposite(ac);
-
-        _img_g.translate(_width * -1.0, 0.0);
-        double delta = 5.0;
-        double xt;
-        //double ts = 0.0;
-        for (xt = 0.0; xt < (2.0 * _width); xt += delta) {
-            Arc2D arc = new Arc2D.Double(0, 0, _width, _height, 0.0, 360.0,
-                    Arc2D.OPEN);
-            _img_g.draw(arc);
-            _img_g.translate(delta, 0.0);
-            //ts += delta;
-        }
-
         return this;
     }
 
@@ -129,6 +101,13 @@ public class OxCaptcha {
         for (int i = 0; i < length; i++) {
             t[i] = _charSet[RAND.nextInt(_charSet.length)];
         }
+        return text(t);
+    }
+    
+    public OxCaptcha text(String chars) {
+        int l = chars.length();
+        char[] t = new char[l];
+        chars.getChars(0, l - 1, t, 0);
         return text(t);
     }
 
@@ -178,7 +157,7 @@ public class OxCaptcha {
     }
 
     private void renderText(int mode) {
-        _img_g.setColor(Color.WHITE);
+        _img_g.setColor(_fg_color);
         if (mode == OxCaptcha.RELATIVE) {
             int x = 0;
             int y = 0;
@@ -216,11 +195,54 @@ public class OxCaptcha {
         }
         Kernel kernel = new Kernel(kernelSize, kernelSize, k);
 
-        BufferedImageOp op = new ConvolveOp(kernel);
+        BufferedImageOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
         _img = op.filter(_img, null);
         _img_g = _img.createGraphics();
         _img_g.setFont(_font);
 
+        return this;
+    }
+    
+    public ConvolveOp gbConvolve(int radius, float sigma, boolean horizontal) {
+        if (radius < 1) {
+            throw new IllegalArgumentException("Radius must be >= 1");
+        }
+
+        int size = radius * 2 + 1;
+        float[] data = new float[size];
+
+        float twoSigmaSquare = 2.0f * sigma * sigma;
+        float sigmaRoot = (float) Math.sqrt(twoSigmaSquare * Math.PI);
+        float total = 0.0f;
+
+        for (int i = -radius; i <= radius; i++) {
+            float distance = i * i;
+            int index = i + radius;
+            data[index] = (float) Math.exp(-distance / twoSigmaSquare) / sigmaRoot;
+            total += data[index];
+        }
+
+        for (int i = 0; i < data.length; i++) {
+            data[i] /= total;
+        }
+
+        Kernel kernel = null;
+        if (horizontal) {
+            kernel = new Kernel(size, 1, data);
+        } else {
+            kernel = new Kernel(1, size, data);
+        }
+        return new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
+    }
+        
+    public OxCaptcha blurGaussian(int radius, double sigma) {
+        BufferedImageOp op = gbConvolve(radius, (float)sigma, true);
+        _img = op.filter(_img, null);
+
+        op = gbConvolve(radius, (float)sigma, false);
+        _img = op.filter(_img, null);
+        _img_g = _img.createGraphics();
+        _img_g.setFont(_font);
         return this;
     }
     
@@ -233,7 +255,7 @@ public class OxCaptcha {
 
         Kernel kernel = new Kernel(3, 3, k);
 
-        BufferedImageOp op = new ConvolveOp(kernel);
+        BufferedImageOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
         _img = op.filter(_img, null);
         _img_g = _img.createGraphics();
         _img_g.setFont(_font);
@@ -252,7 +274,7 @@ public class OxCaptcha {
 
         Kernel kernel = new Kernel(5, 5, k);
 
-        BufferedImageOp op = new ConvolveOp(kernel);
+        BufferedImageOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
         _img = op.filter(_img, null);
         _img_g = _img.createGraphics();
         _img_g.setFont(_font);
@@ -271,16 +293,13 @@ public class OxCaptcha {
 
         Kernel kernel = new Kernel(5, 5, k);
 
-        BufferedImageOp op = new ConvolveOp(kernel);
+        BufferedImageOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
         _img = op.filter(_img, null);
         _img_g = _img.createGraphics();
         _img_g.setFont(_font);
         return this;
     }
 
-    public OxCaptcha noise() {
-        return noiseCurvedLine();
-    }
 
     public OxCaptcha noiseCurvedLine() {
         return noiseCurvedLine(Color.BLACK, 3.0f);
@@ -405,11 +424,11 @@ public class OxCaptcha {
         return this;
     }
 
-    public OxCaptcha transform() {
-        return transformFishEye();
+    public OxCaptcha distortion() {
+        return distortionFishEye();
     }
 
-    public OxCaptcha transformFishEye() {
+    public OxCaptcha distortionFishEye() {
 //        Color hColor = Color.BLACK;
 //        Color vColor = Color.BLACK;
         float thickness = 1.0f;
@@ -474,29 +493,29 @@ public class OxCaptcha {
         return this;
     }
 
-    public OxCaptcha transformStretch() {
+    public OxCaptcha distortionStretch() {
         double xScale = RAND.nextDouble() * 2;
         double yScale = RAND.nextDouble() * 2;
-        return transformStretch(xScale, yScale);
+        return distortionStretch(xScale, yScale);
     }
     
-    public OxCaptcha transformStretch(double xScale, double yScale) {
+    public OxCaptcha distortionStretch(double xScale, double yScale) {
         AffineTransform at = new AffineTransform();
         at.scale(xScale, yScale);
         _img_g.drawRenderedImage(_img, at);
         return this;
     }
 
-    public OxCaptcha transformShear() {
+    public OxCaptcha distortionShear() {
         int xPeriod = RAND.nextInt(5) + 5;
-        int xPhase = RAND.nextInt(5) + 2;
-        int yPeriod = RAND.nextInt(3) + 10;
-        int yPhase = 7;
+        int xPhase = RAND.nextInt(5) + 5;
+        int yPeriod = RAND.nextInt(5) + 5;
+        int yPhase = RAND.nextInt(5) + 5;
 
-        return transformShear(xPeriod, xPhase, yPeriod, yPhase);
+        return distortionShear(xPeriod, xPhase, yPeriod, yPhase);
     }
     
-    public OxCaptcha transformShear(int xPeriod, int xPhase, int yPeriod, int yPhase) {
+    public OxCaptcha distortionShear(int xPeriod, int xPhase, int yPeriod, int yPhase) {
         shearX(_img_g, xPeriod, xPhase, _width, _height);
         shearY(_img_g, yPeriod, yPhase, _width, _height);
         return this;
@@ -577,7 +596,7 @@ public class OxCaptcha {
                             + (6.2831853071795862D * phase) / frames);
             g.copyArea(0, i, w1, 1, (int) d, 0);
             if (borderGap) {
-                g.setColor(Color.BLACK);
+                g.setColor(_bg_color);
                 g.drawLine((int) d, i, 0, i);
                 g.drawLine((int) d + w1, i, w1, i);
             }
@@ -595,7 +614,7 @@ public class OxCaptcha {
                             + (6.2831853071795862D * phase) / frames);
             g.copyArea(i, 0, 1, h1, 0, (int) d);
             if (borderGap) {
-                g.setColor(Color.BLACK);
+                g.setColor(_bg_color);
                 g.drawLine(i, (int) d, i, 0);
                 g.drawLine(i, (int) d + h1, i, h1);
             }
