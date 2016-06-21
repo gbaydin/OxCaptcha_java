@@ -578,7 +578,8 @@ public class OxCaptcha {
         {
             for (int x = 0; x < width; x++)
             {
-                img.setRGB(x, y, new Color(pixels[i++]).getRGB());
+                img.setRGB(x, y, new Color(pixels[i], pixels[i], pixels[i]).getRGB());
+		i++;
             }
         }
         ImageIO.write(img, "png", new File(fileName));
@@ -592,7 +593,7 @@ public class OxCaptcha {
         {
             for (int x = 0; x < width; x++)
             {
-                img.setRGB(x, y, new Color(pixels[x][y]).getRGB());
+                img.setRGB(x, y, new Color(pixels[x][y], pixels[x][y], pixels[x][y]).getRGB());
             }
         }
         ImageIO.write(img, "png", new File(fileName));
