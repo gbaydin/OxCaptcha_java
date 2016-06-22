@@ -65,7 +65,7 @@ public class OxCaptcha {
         _fontRenderContext = _img_g.getFontRenderContext();
         _bg_color = Color.WHITE;
         _fg_color = Color.BLACK;
-        
+
         RenderingHints hints = new RenderingHints(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
@@ -91,7 +91,7 @@ public class OxCaptcha {
         _img_g.fillRect(0,0, _width, _height);
         return this;
     }
-    
+
     public OxCaptcha foreground(Color color) {
         _fg_color = color;
         return this;
@@ -108,7 +108,7 @@ public class OxCaptcha {
         }
         return text(t);
     }
-    
+
     public OxCaptcha text(String chars) {
         return text(chars, (int)(0.05 * _width), (int)(0.75 * _height), 0);
     }
@@ -127,7 +127,7 @@ public class OxCaptcha {
         chars.getChars(0, l, t, 0);
         return text(t, xOffset, yOffset, kerning);
     }
-    
+
     public OxCaptcha text(char[] chars, int xOffset, int yOffset, int kerning) {
         int xn[] = new int[chars.length];
         for (int i = 0; i < chars.length; i++)
@@ -139,7 +139,7 @@ public class OxCaptcha {
         yn[0] = yOffset;
         return text(chars, xn, yn);
     }
-    
+
     // Add letters with per letter positioning
     // Offsets give the position of each letter relative to the top right of the previous letter
     // The offsets of the first letter are relative to the top left of the image
@@ -223,7 +223,7 @@ public class OxCaptcha {
 
         return this;
     }
-    
+
     private ConvolveOp gbConvolve(int radius, float sigma, boolean horizontal) {
         int size = radius * 2 + 1;
         float[] vals = new float[size];
@@ -244,13 +244,13 @@ public class OxCaptcha {
         Kernel kernel = null;
         if (horizontal) {
             kernel = new Kernel(size, 1, vals);
-        } 
+        }
         else {
             kernel = new Kernel(1, size, vals);
         }
         return new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
     }
-        
+
     public OxCaptcha blurGaussian(int radius, double sigma) {
         if (radius < 1) {
             throw new IllegalArgumentException("radius must be greater than 1");
@@ -264,7 +264,7 @@ public class OxCaptcha {
         _img_g.setFont(_font);
         return this;
     }
-    
+
     public OxCaptcha blurGaussian3x3() {
 
         float[] k = new float[] {
@@ -425,7 +425,7 @@ public class OxCaptcha {
         Color b = new Color(0, 0, 0);
 
         _img_g.setStroke(new BasicStroke(1));
-                
+
         _img_g.setColor(Color.WHITE);
 
         for (int i = 0; i < s; i++)
@@ -519,7 +519,7 @@ public class OxCaptcha {
         double yScale = RAND.nextDouble() * 2;
         return distortionStretch(xScale, yScale);
     }
-    
+
     public OxCaptcha distortionStretch(double xScale, double yScale) {
         AffineTransform at = new AffineTransform();
         at.scale(xScale, yScale);
@@ -535,13 +535,13 @@ public class OxCaptcha {
 
         return distortionShear(xPeriod, xPhase, yPeriod, yPhase);
     }
-    
+
     public OxCaptcha distortionShear(int xPeriod, int xPhase, int yPeriod, int yPhase) {
         shearX(_img_g, xPeriod, xPhase, _width, _height);
         shearY(_img_g, yPeriod, yPhase, _width, _height);
         return this;
     }
-    
+
     public OxCaptcha normalize() {
         int p[] = getImageArray1D();
         int pmin = p[0];
@@ -556,8 +556,8 @@ public class OxCaptcha {
             }
         }
         int prange = pmax - pmin;
-        
-        if (prange > 0) {
+
+        if (prange > 2) {
             int i = 0;
             for (int y = 0; y < _height; y++)
             {
@@ -570,8 +570,8 @@ public class OxCaptcha {
         }
         return this;
     }
-    
-    public void write1DArrayToFile(int[] pixels, int width, int height, String fileName) throws IOException {
+
+    public void save(int[] pixels, int width, int height, String fileName) throws IOException {
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         int i = 0;
         for (int y = 0; y < height; y++)
@@ -579,13 +579,13 @@ public class OxCaptcha {
             for (int x = 0; x < width; x++)
             {
                 img.setRGB(x, y, new Color(pixels[i], pixels[i], pixels[i]).getRGB());
-		i++;
+                i++;
             }
         }
         ImageIO.write(img, "png", new File(fileName));
     }
 
-    public void write2DArrayToFile(int[][] pixels, String fileName) throws IOException {
+    public void save(int[][] pixels, String fileName) throws IOException {
         int height = pixels.length;
         int width = pixels[0].length;
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
@@ -598,7 +598,7 @@ public class OxCaptcha {
         }
         ImageIO.write(img, "png", new File(fileName));
     }
-        
+
     public String getText() {
         return new String(_chars);
     }
@@ -615,7 +615,7 @@ public class OxCaptcha {
                 int p = _img.getRGB(x, y);
                 int red = (p >> 16) & 0xff;
                 ret[y][x] = red;
-                
+
             }
         }
         return ret;
@@ -635,7 +635,7 @@ public class OxCaptcha {
         return ret;
     }
 
-    public void writeImageToFile(String fileName) throws IOException {
+    public void save(String fileName) throws IOException {
         ImageIO.write(_img, "png", new File(fileName));
     }
 
