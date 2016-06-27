@@ -55,7 +55,7 @@ public class Test {
          
         // Add noise
         //c.noiseStraightLine();
-//        c.noiseCurvedLine();
+        c.noiseCurvedLine();
         c.noiseSaltPepper();
         //c.noiseSaltPepper(0.05f, 0.05f);
         
@@ -73,7 +73,7 @@ public class Test {
         // Write rendered image to a png file
         System.out.println(Long.toString(elapsedTime) + " ms");
         try {
-            c.writeImageToFile("test.png");
+            c.save("test.png");
         }
         catch (IOException e) {
             e.printStackTrace();

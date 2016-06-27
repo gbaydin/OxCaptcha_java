@@ -56,7 +56,7 @@ public class OxCaptcha {
     private FontRenderContext _fontRenderContext;
     private char[] _charSet = new char[] { 'a', 'b', 'c', 'd',
             'e', 'f', 'g', 'h', 'k', 'm', 'n', 'p', 'r', 'w', 'x', 'y',
-            '2', '3', '4', '5', '6', '7', '8', };
+            '2', '3', '4', '5', '6', '7', '8', 'A', 'J', 'K','z','q','S'};
 
     public OxCaptcha(int width, int height) {
         _img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
@@ -321,7 +321,7 @@ public class OxCaptcha {
 
 
     public OxCaptcha noiseCurvedLine() {
-        return noiseCurvedLine(Color.BLACK, 3.0f);
+        return noiseCurvedLine(_fg_color, 3.0f);
     }
 
     public OxCaptcha noiseCurvedLine(Color color, float thickness) {
@@ -369,7 +369,7 @@ public class OxCaptcha {
     }
 
     public OxCaptcha noiseStraightLine() {
-        return noiseStraightLine(Color.BLACK, 3.0f);
+        return noiseStraightLine(_fg_color, 3.0f);
     }
 
     public OxCaptcha noiseStraightLine(Color color, float thickness) {
@@ -420,9 +420,6 @@ public class OxCaptcha {
     public OxCaptcha noiseSaltPepper(float salt, float pepper) {
         int s = (int) (_height * _width * salt);
         int p = (int) (_height * _width * pepper);
-
-        Color w = new Color(255, 255, 255);
-        Color b = new Color(0, 0, 0);
 
         _img_g.setStroke(new BasicStroke(1));
 
@@ -528,10 +525,10 @@ public class OxCaptcha {
     }
 
     public OxCaptcha distortionShear() {
-        int xPeriod = RAND.nextInt(10) + 5;
-        int xPhase = RAND.nextInt(8) + 5;
-        int yPeriod = RAND.nextInt(10) + 5;
-        int yPhase = RAND.nextInt(8) + 5;
+        int xPeriod = RAND.nextInt(10) + 8;
+        int xPhase = RAND.nextInt(8) + 8;
+        int yPeriod = RAND.nextInt(10) + 8;
+        int yPhase = RAND.nextInt(8) + 8;
 
         return distortionShear(xPeriod, xPhase, yPeriod, yPhase);
     }
