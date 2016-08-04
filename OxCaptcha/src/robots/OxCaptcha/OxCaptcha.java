@@ -572,6 +572,27 @@ public class OxCaptcha {
         _img_g.drawRenderedImage(_img, at);
     }
 
+    public void distortionElectric() {
+        distortionElectric(4000, 2, 3);
+    }
+    
+    public void distortionElectric(int amount, int shift, int size) {
+        for (int i = 0; i < amount / 2; i++) {
+            int x = RAND.nextInt(_width);
+            int y = RAND.nextInt(_height);
+            int s = RAND.nextInt(shift);
+            _img_g.copyArea(x + s, y, size, 1, s, 0);
+            _img_g.copyArea(x, y, size, 1, s, 0);
+        }
+        for (int i = 0; i < amount / 2; i++) {
+            int x = RAND.nextInt(_width);
+            int y = RAND.nextInt(_height);
+            int s = RAND.nextInt(shift);
+            _img_g.copyArea(x, y + s, 1, size, 0, s);
+            _img_g.copyArea(x, y, 1, size, 0, s);
+        }
+    }
+    
     public void distortionShear() {
         int xPeriod = RAND.nextInt(10) + 8;
         int xPhase = RAND.nextInt(8) + 8;
@@ -701,11 +722,11 @@ public class OxCaptcha {
     }
 
     private static final void applyFilter(BufferedImage img, ImageFilter filter) {
-            FilteredImageSource src = new FilteredImageSource(img.getSource(), filter);
-            Image fImg = Toolkit.getDefaultToolkit().createImage(src);
-            Graphics2D g = img.createGraphics();
-            g.drawImage(fImg, 0, 0, null, null);
-            //g.dispose();
+        FilteredImageSource src = new FilteredImageSource(img.getSource(), filter);
+        Image fImg = Toolkit.getDefaultToolkit().createImage(src);
+        Graphics2D g = img.createGraphics();
+        g.drawImage(fImg, 0, 0, null, null);
+        //g.dispose();
     }
 
     private void shearX(Graphics2D g, int period, int phase, int width, int height) {
