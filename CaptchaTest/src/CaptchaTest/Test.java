@@ -31,34 +31,38 @@ public class Test {
         // Create background
         c.background();
         
+//        c.setFont("Courier");
+        c.setHollow();
+        
         // Add text
-//        c.text(7);
-        c.text("Aabgt34BS", 3, 40, -3);
+//        c.text(5);
+//        c.text("Aabgt34BS", 3, 40, -3);
 //        c.text(new char[] {'a', 'b', 'c'}, 0, 30, -2);
-//        c.text("2a2ba", 2);
-        //c.text(new char[] {'a', 'b', 'c'}, new int[] {1,2,7}, new int[] {30,5,-10});
-
+//        c.text("2a2bab", 0);
+//        c.textAbsolute(new char[] {'a', 'b', 'c'}, new int[] {1,20,30}, new int[] {30,35,40});
+          c.text(new char[] {'a', 'b', 'c', 'd'}, new int[] {0, 1, 2, 3}, 0, 30, -2);
         
         // Apply distortion
         //c.distortionFishEye();
         //c.distortionStretch(1.4, 1.1);
 //        c.distortionShear(2, 15, 10, 15);
-        c.distortionShear();
-        
+//        c.distortionShear();
+//        c.distortionShear(35, 2, 35, 10);
+
+        // Add noise
+        //c.noiseStraightLine();
+//        c.noiseCurvedLine(2.0f);
+//        c.noiseSaltPepper();
+        //c.noiseSaltPepper(0.05f, 0.05f);
+
         // Add blur
         //c.blur(10);
-        c.blurGaussian(2, 2.);
+//        c.blurGaussian(1.);
         //c.blurGaussian5x5s1();
         //c.blurGaussian5x5s2();
 
         c.normalize();
-         
-        // Add noise
-        //c.noiseStraightLine();
-        c.noiseCurvedLine();
-        c.noiseSaltPepper();
-        //c.noiseSaltPepper(0.05f, 0.05f);
-        
+       
         // Get rendered image
         //BufferedImage img = c.getImage();
         

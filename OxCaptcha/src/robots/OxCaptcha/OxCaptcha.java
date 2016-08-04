@@ -36,8 +36,6 @@ import java.util.Random;
 
 public class OxCaptcha {
     private static final Random RAND = new SecureRandom();
-    public static final int RELATIVE = 0;
-    public static final int ABSOLUTE = 1;
 
     private BufferedImage _img;
     private Graphics2D _img_g;
@@ -52,7 +50,8 @@ public class OxCaptcha {
     private int[] _yOffsets = new int[] {};
     private int[] _xs = new int[] {};
     private int[] _ys = new int[] {};
-    private Font _font = new Font("Arial", Font.PLAIN, 40);
+    private boolean _hollow;
+    private Font _font;
     private FontRenderContext _fontRenderContext;
     private char[] _charSet = new char[] { 'a', 'b', 'c', 'd',
             'e', 'f', 'g', 'h', 'k', 'm', 'n', 'p', 'r', 'w', 'x', 'y',
@@ -61,10 +60,13 @@ public class OxCaptcha {
     public OxCaptcha(int width, int height) {
         _img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         _img_g = _img.createGraphics();
+        _hollow = false;
+        _font = new Font("Arial", Font.PLAIN, 40);
         _img_g.setFont(_font);
         _fontRenderContext = _img_g.getFontRenderContext();
         _bg_color = Color.WHITE;
         _fg_color = Color.BLACK;
+
 
         RenderingHints hints = new RenderingHints(
                 RenderingHints.KEY_ANTIALIASING,
@@ -80,55 +82,78 @@ public class OxCaptcha {
 
     public void setCharSet(char[] charSet) {
         _charSet = charSet;
+        
     }
 
-    public OxCaptcha background() {
-        return background(_bg_color);
+    public void setFont(String name) {
+        setFont(name, Font.PLAIN, 40);
     }
-    public OxCaptcha background(Color color) {
+    
+       
+    public void setFont(String name, int style, int size) {
+        _font = new Font(name, Font.PLAIN, 40);
+        _img_g.setFont(_font);
+        _fontRenderContext = _img_g.getFontRenderContext();
+    }
+    
+    public void setHollow() {
+        _hollow = true;
+    }
+    
+    
+    public void background() {
+        background(_bg_color);
+    }
+    public void background(Color color) {
         _bg_color = color;
         _img_g.setPaint(color);
         _img_g.fillRect(0,0, _width, _height);
-        return this;
     }
 
-    public OxCaptcha foreground(Color color) {
+    public void foreground(Color color) {
         _fg_color = color;
-        return this;
     }
 
-    public OxCaptcha text() {
-        return text(5);
+    public void text() {
+        text(5);
     }
 
-    public OxCaptcha text(int length) {
+    public void text(int length) {
         char[] t = new char[length];
         for (int i = 0; i < length; i++) {
             t[i] = _charSet[RAND.nextInt(_charSet.length)];
         }
-        return text(t);
+        text(t);
     }
 
-    public OxCaptcha text(String chars) {
-        return text(chars, (int)(0.05 * _width), (int)(0.75 * _height), 0);
+    public void text(String chars) {
+        text(chars, (int)(0.05 * _width), (int)(0.75 * _height), 0);
     }
 
-    public OxCaptcha text(String chars, int kerning) {
-        return text(chars, (int)(0.05 * _width), (int)(0.75 * _height), kerning);
+    public void text(String chars, int kerning) {
+        text(chars, (int)(0.05 * _width), (int)(0.75 * _height), kerning);
     }
 
-    public OxCaptcha text(char[] chars) {
-        return text(chars, (int)(0.05 * _width), (int)(0.75 * _height), 0);
+    public void text(char[] chars) {
+        text(chars, (int)(0.05 * _width), (int)(0.75 * _height), 0);
     }
 
-    public OxCaptcha text(String chars, int xOffset, int yOffset, int kerning) {
+    public void text(String chars, int xOffset, int yOffset, int kerning) {
         int l = chars.length();
         char[] t = new char[l];
         chars.getChars(0, l, t, 0);
-        return text(t, xOffset, yOffset, kerning);
+        text(t, xOffset, yOffset, kerning);
     }
 
-    public OxCaptcha text(char[] chars, int xOffset, int yOffset, int kerning) {
+    public void text(char[] chars, int xOffset, int yOffset, int kerning) {
+        int styles[] = new int[chars.length];
+        for (int i = 0 ; i < chars.length; i++) {
+            styles[i] = Font.PLAIN;
+        }
+        text(chars, styles, xOffset, yOffset, kerning);
+    }
+        
+    public void text(char[] chars, int[] styles, int xOffset, int yOffset, int kerning) {
         int xn[] = new int[chars.length];
         for (int i = 0; i < chars.length; i++)
         {
@@ -137,78 +162,101 @@ public class OxCaptcha {
         int yn[] = new int[chars.length];
         xn[0] = xOffset;
         yn[0] = yOffset;
-        return text(chars, xn, yn);
+        textRelative(chars, styles, xn, yn);
     }
 
-    // Add letters with per letter positioning
-    // Offsets give the position of each letter relative to the top right of the previous letter
-    // The offsets of the first letter are relative to the top left of the image
-    // (For an image 50 pixels high, it's a good idea to start the first y offset around 30, so that the text is inside the image)
-    // x increases from left to right
-    // y increases from top to bottom
-    public OxCaptcha text(char[] chars, int[] xOffsets, int[] yOffsets) {
-        return text(chars, xOffsets, yOffsets, OxCaptcha.RELATIVE);
-    }
-
-    // Add letters with either RELATIVE (per letter) or ABSOLUTE positioning.
-    // if mode is OxCaptcha.ABSOLUTE, xs and ys are absolute positions of letters in chars
-    // if mode is OxCaptcha.RELATIVE, xs and ys are relative positions of letters in chars:
-    // Offsets give the position of each letter relative to the top right of the previous letter
-    // The offsets of the first letter are relative to the top left of the image
-    // (For an image 50 pixels high, it's a good idea to start the first y offset around 30, so that the text is inside the image)
-    // x increases from left to right
-    // y increases from top to bottom
-    public OxCaptcha text(char[] chars, int[] xs, int[] ys, int mode) {
-        if (mode == OxCaptcha.RELATIVE) {
-            _xOffsets = xs;
-            _yOffsets = ys;
-        } else {
-            _xs = xs;
-            _ys = ys;
+    public void textRelative(char[] chars, int[] xOffsets, int[] yOffsets) {
+        int styles[] = new int[chars.length];
+        for (int i = 0 ; i < chars.length; i++) {
+            styles[i] = Font.PLAIN;
         }
+        textRelative(chars, styles, xOffsets, yOffsets);
+    }
+    
+    // Add letters with relative per letter positioning
+    // Offsets give the position of each letter relative to the top right of the previous letter
+    // The offsets of the first letter are relative to the top left of the image
+    // (For an image 50 pixels high, it's a good idea to start the first y offset around 30, so that the text is inside the image)
+    // x increases from left to right
+    // y increases from top to bottom
+    public void textRelative(char[] chars, int[] styles, int[] xOffsets, int[] yOffsets) {
+        _xOffsets = xOffsets;
+        _yOffsets = yOffsets;
+
         _chars = chars;
         _length = _chars.length;
 
-        renderText(mode);
-        return this;
-    }
-
-    private void renderText() {
-        renderText(OxCaptcha.RELATIVE);
-    }
-
-    private void renderText(int mode) {
         _img_g.setColor(_fg_color);
-        if (mode == OxCaptcha.RELATIVE) {
-            int x = 0;
-            int y = 0;
-            char[] cc = new char[1];
-            for (int i = 0; i < _length; i++) {
-                x = x + _xOffsets[i];
-                y = y + _yOffsets[i];
-                cc[0] = _chars[i];
+        int x = 0;
+        int y = 0;
+        char[] cc = new char[1];
+        for (int i = 0; i < _length; i++) {
+            x = x + _xOffsets[i];
+            y = y + _yOffsets[i];
+            cc[0] = _chars[i];
 
-                _img_g.drawChars(cc, 0, 1, x, y);
+            _font = _font.deriveFont(styles[i]);
+            _img_g.setFont(_font);
+            _fontRenderContext = _img_g.getFontRenderContext();
+        
+            renderChar(cc, x, y);
 
-                GlyphVector gv = _font.createGlyphVector(_fontRenderContext, cc);
-                int width = (int) gv.getVisualBounds().getWidth();
-                x = x + width + 1;
-            }
-        } else {
-            char[] cc = new char[1];
-            for (int i = 0; i < _length; i++) {
-                cc[0] = _chars[i];
+            GlyphVector gv = _font.createGlyphVector(_fontRenderContext, cc);
+            int width = (int) gv.getVisualBounds().getWidth();
+            x = x + width + 1;
+        }
+        _font = _font.deriveFont(Font.PLAIN);
+    }
 
-                _img_g.drawChars(cc, 0, 1, _xs[i], _ys[i]);
-            }
+    // Add letters with absolute per letter positioning.
+    // xs and ys are absolute positions of letters in chars
+    // The offsets of the first letter are relative to the top left of the image
+    // (For an image 50 pixels high, it's a good idea to start the first y offset around 30, so that the text is inside the image)
+    // x increases from left to right
+    // y increases from top to bottom
+    public void textAbsolute(char[] chars, int[] styles, int[] xs, int[] ys) {
+        _xs = xs;
+        _ys = ys;
+
+        _chars = chars;
+        _length = _chars.length;
+
+        _img_g.setColor(_fg_color);
+        char[] cc = new char[1];
+        for (int i = 0; i < _length; i++) {
+            cc[0] = _chars[i];
+            
+            _font = _font.deriveFont(styles[i]);
+            _img_g.setFont(_font);
+            _fontRenderContext = _img_g.getFontRenderContext();
+            
+            renderChar(cc, _xs[i], _ys[i]);
+        }
+        _font = _font.deriveFont(Font.PLAIN);
+    }
+
+        
+    private void renderChar(char[] cc, int x, int y) {
+        if (_hollow) {
+            _img_g.drawChars(cc, 0, 1, x - 1, y - 1);
+            _img_g.drawChars(cc, 0, 1, x - 1, y + 1);
+            _img_g.drawChars(cc, 0, 1, x + 1, y - 1);
+            _img_g.drawChars(cc, 0, 1, x + 1, y + 1);
+            _img_g.setColor(_bg_color);
+            _img_g.drawChars(cc, 0, 1, x, y);
+            _img_g.setColor(_fg_color);
+
+        }
+        else {
+            _img_g.drawChars(cc, 0, 1, x, y);
         }
     }
-
-    public OxCaptcha blur() {
-        return blur(3);
+    
+    public void blur() {
+        blur(3);
     }
 
-    public OxCaptcha blur(int kernelSize) {
+    public void blur(int kernelSize) {
 
         float[] k = new float[kernelSize * kernelSize];
         for (int i = 0; i < kernelSize; i++) {
@@ -220,8 +268,6 @@ public class OxCaptcha {
         _img = op.filter(_img, null);
         _img_g = _img.createGraphics();
         _img_g.setFont(_font);
-
-        return this;
     }
 
     private ConvolveOp gbConvolve(int radius, float sigma, boolean horizontal) {
@@ -251,7 +297,11 @@ public class OxCaptcha {
         return new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
     }
 
-    public OxCaptcha blurGaussian(int radius, double sigma) {
+    public void blurGaussian(double sigma) {
+        blurGaussian(2, sigma);
+    }
+    
+    public void blurGaussian(int radius, double sigma) {
         if (radius < 1) {
             throw new IllegalArgumentException("radius must be greater than 1");
         }
@@ -262,10 +312,9 @@ public class OxCaptcha {
         _img = op.filter(_img, null);
         _img_g = _img.createGraphics();
         _img_g.setFont(_font);
-        return this;
-    }
+     }
 
-    public OxCaptcha blurGaussian3x3() {
+    public void blurGaussian3x3() {
 
         float[] k = new float[] {
             1f/16f, 1f/8f, 1f/16f,
@@ -278,11 +327,9 @@ public class OxCaptcha {
         _img = op.filter(_img, null);
         _img_g = _img.createGraphics();
         _img_g.setFont(_font);
-
-        return this;
     }
 
-    public OxCaptcha blurGaussian5x5s1() {
+    public void blurGaussian5x5s1() {
 
         float[] k = new float[] {
             1f/273f,  4f/273f,  7f/273f,  4f/273f, 1f/273f,
@@ -298,10 +345,9 @@ public class OxCaptcha {
         _img_g = _img.createGraphics();
         _img_g.setFont(_font);
 
-        return this;
     }
 
-    public OxCaptcha blurGaussian5x5s2() {
+    public void blurGaussian5x5s2() {
 
         float[] k = new float[] {
             0.023528f, 0.033969f, 0.038393f, 0.033969f, 0.023528f,
@@ -316,15 +362,18 @@ public class OxCaptcha {
         _img = op.filter(_img, null);
         _img_g = _img.createGraphics();
         _img_g.setFont(_font);
-        return this;
     }
 
 
-    public OxCaptcha noiseCurvedLine() {
-        return noiseCurvedLine(_fg_color, 3.0f);
+    public void noiseCurvedLine() {
+        noiseCurvedLine(_fg_color, 2.0f);
     }
 
-    public OxCaptcha noiseCurvedLine(Color color, float thickness) {
+    public void noiseCurvedLine(float thickness) {
+        noiseCurvedLine(_fg_color, thickness);
+    }
+    
+    public void noiseCurvedLine(Color color, float thickness) {
         // the curve from where the points are taken
         CubicCurve2D cc = new CubicCurve2D.Float(_width * .1f, _height
                 * RAND.nextFloat(), _width * .1f, _height
@@ -365,14 +414,13 @@ public class OxCaptcha {
             _img_g.drawLine((int) pts[i].getX(), (int) pts[i].getY(),
                     (int) pts[i + 1].getX(), (int) pts[i + 1].getY());
         }
-        return this;
     }
 
-    public OxCaptcha noiseStraightLine() {
-        return noiseStraightLine(_fg_color, 3.0f);
+    public void noiseStraightLine() {
+        noiseStraightLine(_fg_color, 3.0f);
     }
 
-    public OxCaptcha noiseStraightLine(Color color, float thickness) {
+    public void noiseStraightLine(Color color, float thickness) {
         int y1 = RAND.nextInt(_height) + 1;
         int y2 = RAND.nextInt(_height) + 1;
         int x1 = 0;
@@ -410,14 +458,13 @@ public class OxCaptcha {
         yPoints[3] = y2 + dy;
 
         _img_g.fillPolygon(xPoints, yPoints, 4);
-        return this;
     }
 
-    public OxCaptcha noiseSaltPepper() {
-        return noiseSaltPepper(0.01f, 0.01f);
+    public void noiseSaltPepper() {
+        noiseSaltPepper(0.01f, 0.01f);
     }
 
-    public OxCaptcha noiseSaltPepper(float salt, float pepper) {
+    public void noiseSaltPepper(float salt, float pepper) {
         int s = (int) (_height * _width * salt);
         int p = (int) (_height * _width * pepper);
 
@@ -439,14 +486,13 @@ public class OxCaptcha {
             int y = (int) (RAND.nextFloat() * _height);
             _img_g.drawLine(x, y, x, y);
         }
-        return this;
     }
 
-    public OxCaptcha distortion() {
-        return distortionShear();
+    public void distortion() {
+        distortionShear();
     }
 
-    public OxCaptcha distortionFishEye() {
+    public void distortionFishEye() {
 //        Color hColor = Color.BLACK;
 //        Color vColor = Color.BLACK;
         float thickness = 1.0f;
@@ -508,38 +554,35 @@ public class OxCaptcha {
                 }
             }
         }
-        return this;
     }
 
-    public OxCaptcha distortionStretch() {
+    public void distortionStretch() {
         double xScale = RAND.nextDouble() * 2;
         double yScale = RAND.nextDouble() * 2;
-        return distortionStretch(xScale, yScale);
+        distortionStretch(xScale, yScale);
     }
 
-    public OxCaptcha distortionStretch(double xScale, double yScale) {
+    public void distortionStretch(double xScale, double yScale) {
         AffineTransform at = new AffineTransform();
         at.scale(xScale, yScale);
         _img_g.drawRenderedImage(_img, at);
-        return this;
     }
 
-    public OxCaptcha distortionShear() {
+    public void distortionShear() {
         int xPeriod = RAND.nextInt(10) + 8;
         int xPhase = RAND.nextInt(8) + 8;
         int yPeriod = RAND.nextInt(10) + 8;
         int yPhase = RAND.nextInt(8) + 8;
 
-        return distortionShear(xPeriod, xPhase, yPeriod, yPhase);
+        distortionShear(xPeriod, xPhase, yPeriod, yPhase);
     }
 
-    public OxCaptcha distortionShear(int xPeriod, int xPhase, int yPeriod, int yPhase) {
+    public void distortionShear(int xPeriod, int xPhase, int yPeriod, int yPhase) {
         shearX(_img_g, xPeriod, xPhase, _width, _height);
         shearY(_img_g, yPeriod, yPhase, _width, _height);
-        return this;
     }
 
-    public OxCaptcha normalize() {
+    public void normalize() {
         int p[] = getImageArray1D();
         int pmin = p[0];
         int pmax = p[0];
@@ -565,7 +608,6 @@ public class OxCaptcha {
                 }
             }
         }
-        return this;
     }
 
     public void save(int[] pixels, int width, int height, String fileName) throws IOException {
@@ -670,6 +712,15 @@ public class OxCaptcha {
                     * Math.sin((double) i / (double) period
                             + (6.2831853071795862D * phase) / frames);
             g.copyArea(0, i, width, 1, (int) d, 0);
+            g.setColor(_bg_color);
+            if (d >= 0) {
+                g.drawLine(0, i, (int) d, i);
+            }
+            else {
+                g.drawLine(width + (int) d, i, width, i);
+            }
+            g.setColor(_fg_color);
+
         }
     }
 
@@ -681,6 +732,14 @@ public class OxCaptcha {
                     * Math.sin((float) i / period
                             + (6.2831853071795862D * phase) / frames);
             g.copyArea(i, 0, 1, height, 0, (int) d);
+            g.setColor(_bg_color);
+            if (d >= 0) {
+                g.drawLine(i, 0, i, (int) d);
+            }
+            else {
+                g.drawLine(i, height + (int) d, i, height);
+            }
+            g.setColor(_fg_color);
         }
     }
 }
