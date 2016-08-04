@@ -89,9 +89,8 @@ public class OxCaptcha {
         setFont(name, Font.PLAIN, 40);
     }
     
-       
     public void setFont(String name, int style, int size) {
-        _font = new Font(name, Font.PLAIN, 40);
+        _font = new Font(name, style, size);
         _img_g.setFont(_font);
         _fontRenderContext = _img_g.getFontRenderContext();
     }

@@ -61,7 +61,7 @@ public class Test {
 
         // Add blur
         //c.blur(10);
-        c.blurGaussian(0.75);
+        c.blurGaussian(0.7);
         //c.blurGaussian5x5s1();
         //c.blurGaussian5x5s2();
 
