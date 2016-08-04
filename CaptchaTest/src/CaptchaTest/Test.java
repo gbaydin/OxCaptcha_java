@@ -31,7 +31,7 @@ public class Test {
         // Create background
         c.background();
         
-        c.setFont("serif");
+        c.setFont("Ubuntu Regular");
         c.setHollow();
         
         // Add text
@@ -52,14 +52,14 @@ public class Test {
 
         // Add noise
 //        c.noiseStraightLine();
-        c.noiseCurvedLine();
-//        c.noiseCurvedLine(0.8f, 2.0f);
+//        c.noiseCurvedLine();
+        c.noiseCurvedLine(0.7f, 2.0f);
 //        c.noiseSaltPepper();
         //c.noiseSaltPepper(0.05f, 0.05f);
 
         // Add blur
         //c.blur(10);
-        c.blurGaussian(1.);
+//        c.blurGaussian(1.);
         //c.blurGaussian5x5s1();
         //c.blurGaussian5x5s2();
 

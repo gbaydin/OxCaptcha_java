@@ -380,10 +380,10 @@ public class OxCaptcha {
     public void noiseCurvedLine(float xScale, Color color, float thickness) {
         // the curve from where the points are taken
         CubicCurve2D cc = new CubicCurve2D.Float(
-                _width * 0.1f, _height * RAND.nextFloat(), 
-                _width * 0.1f, _height * RAND.nextFloat(),
-                xScale * _width * 0.25f, _height * RAND.nextFloat(), 
-                xScale * _width * 0.9f, _height * RAND.nextFloat());
+                5 + RAND.nextFloat() * _width * 0.25f, _height * RAND.nextFloat(),
+                5 + RAND.nextFloat() * _width * 0.25f, _height * RAND.nextFloat(),
+                xScale * _width * 0.4f, _height * RAND.nextFloat(), 
+                xScale * _width * (0.8f + RAND.nextFloat() * 0.2f), _height * RAND.nextFloat());
 
         // creates an iterator to define the boundary of the flattened curve
         PathIterator pi = cc.getPathIterator(null, 2);
