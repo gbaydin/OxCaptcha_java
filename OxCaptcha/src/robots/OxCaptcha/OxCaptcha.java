@@ -366,20 +366,24 @@ public class OxCaptcha {
 
 
     public void noiseCurvedLine() {
-        noiseCurvedLine(_fg_color, 2.0f);
+        noiseCurvedLine(1.f, _fg_color, 2.0f);
     }
 
     public void noiseCurvedLine(float thickness) {
-        noiseCurvedLine(_fg_color, thickness);
+        noiseCurvedLine(1.0f, _fg_color, thickness);
     }
     
-    public void noiseCurvedLine(Color color, float thickness) {
+    public void noiseCurvedLine(float xScale, float thickness) {
+        noiseCurvedLine(xScale, _fg_color, thickness);
+    }
+    
+    public void noiseCurvedLine(float xScale, Color color, float thickness) {
         // the curve from where the points are taken
-        CubicCurve2D cc = new CubicCurve2D.Float(_width * .1f, _height
-                * RAND.nextFloat(), _width * .1f, _height
-                * RAND.nextFloat(), _width * .25f, _height
-                * RAND.nextFloat(), _width * .9f, _height
-                * RAND.nextFloat());
+        CubicCurve2D cc = new CubicCurve2D.Float(
+                _width * 0.1f, _height * RAND.nextFloat(), 
+                _width * 0.1f, _height * RAND.nextFloat(),
+                xScale * _width * 0.25f, _height * RAND.nextFloat(), 
+                xScale * _width * 0.9f, _height * RAND.nextFloat());
 
         // creates an iterator to define the boundary of the flattened curve
         PathIterator pi = cc.getPathIterator(null, 2);
@@ -406,8 +410,8 @@ public class OxCaptcha {
 
         _img_g.setColor(color);
 
-        // for the maximum 3 point change the stroke and direction
         for (i = 0; i < pts.length - 1; i++) {
+            // for the maximum 3 point change the stroke and direction
             if (i < 3) {
             	_img_g.setStroke(new BasicStroke(thickness));
             }
