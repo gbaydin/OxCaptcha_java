@@ -32,12 +32,13 @@ public class Test {
         c.background();
         
 //        c.setFont("Ubuntu Regular");
-//        c.setHollow();
+        c.setHollow();
         
         // Add text
 //        c.text(5);
+        c.text("6AAK");
 //        c.text("Aabgt34BS", 3, 40, -3);
-          c.text("trustother", 3, 40, 3);
+//          c.text("trustother", 3, 40, 3);
 //        c.text(new char[] {'4', 'c', 'z', '8', 'J', 'y', 'A', 'z'}, new int[] {1,1,1,1,1,1,1,1,1}, 0, 30, -4);
 
 //        c.text(new char[] {'a', 'b', 'c'}, 0, 30, -2);
@@ -50,12 +51,12 @@ public class Test {
         c.distortionShear(10, 10, 10, 10);
 //        c.distortionShear();
 //        c.distortionShear(35, 2, 35, 10);
-        c.distortionElectric();
+//        c.distortionElectric();
 
         // Add noise
 //        c.noiseStraightLine();
 //        c.noiseCurvedLine();
-//        c.noiseCurvedLine(0.7f, 2.0f);
+        c.noiseCurvedLine(15, 100, 2.0f);
 //        c.noiseSaltPepper();
         //c.noiseSaltPepper(0.05f, 0.05f);
 

@@ -365,27 +365,32 @@ public class OxCaptcha {
 
 
     public void noiseCurvedLine() {
-        noiseCurvedLine(1.f, _fg_color, 2.0f);
+        noiseCurvedLine(5, _width, 2.0f, _fg_color);
     }
 
     public void noiseCurvedLine(float thickness) {
-        noiseCurvedLine(1.0f, _fg_color, thickness);
+        noiseCurvedLine(5, _width, thickness, _fg_color);
     }
     
-    public void noiseCurvedLine(float xScale, float thickness) {
-        noiseCurvedLine(xScale, _fg_color, thickness);
+    
+    public void noiseCurvedLine(int xOffset, int xRange) {
+        noiseCurvedLine(xOffset, xRange, 2.0f, _fg_color);
     }
     
-    public void noiseCurvedLine(float xScale, Color color, float thickness) {
+    public void noiseCurvedLine(int xOffset, int xRange, float thickness) {
+        noiseCurvedLine(xOffset, xRange, thickness, _fg_color);
+    }
+    
+    public void noiseCurvedLine(int xOffset, int xRange, float thickness, Color color) {
         // the curve from where the points are taken
         CubicCurve2D cc = new CubicCurve2D.Float(
-                5 + RAND.nextFloat() * _width * 0.25f, _height * RAND.nextFloat(),
-                5 + RAND.nextFloat() * _width * 0.25f, _height * RAND.nextFloat(),
-                xScale * _width * 0.4f, _height * RAND.nextFloat(), 
-                xScale * _width * (0.8f + RAND.nextFloat() * 0.2f), _height * RAND.nextFloat());
+                xOffset + RAND.nextFloat() * _width * 0.25f, _height * RAND.nextFloat(),
+                xOffset + RAND.nextFloat() * _width * 0.25f, _height * RAND.nextFloat(),
+                xOffset + xRange * 0.4f, _height * RAND.nextFloat(), 
+                xOffset + xRange * (0.8f + RAND.nextFloat() * 0.2f), _height * RAND.nextFloat());
 
         // creates an iterator to define the boundary of the flattened curve
-        PathIterator pi = cc.getPathIterator(null, 2);
+        PathIterator pi = cc.getPathIterator(null, 0.1);
         Point2D tmp[] = new Point2D[200];
         int i = 0;
 
