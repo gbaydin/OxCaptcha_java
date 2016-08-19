@@ -639,6 +639,21 @@ public class OxCaptcha {
         }
     }
 
+    public int[][] load(String fileName) throws IOException {
+        BufferedImage i = ImageIO.read(new File(fileName));
+        int height = i.getHeight();
+        int width = i.getWidth();
+        int ret[][] = new int[height][width];
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                ret[y][x] = (i.getRGB(x, y) & 0xFF);
+            }
+        }
+        return ret;
+    }
+    
     public void save(int[] pixels, int width, int height, String fileName) throws IOException {
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         int i = 0;
