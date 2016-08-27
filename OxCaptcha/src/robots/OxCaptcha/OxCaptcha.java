@@ -46,10 +46,6 @@ public class OxCaptcha {
     private Color _fg_color;
     private char[] _chars = new char[] {};
     private int _length = 0;
-    private int[] _xOffsets = new int[] {};
-    private int[] _yOffsets = new int[] {};
-    private int[] _xs = new int[] {};
-    private int[] _ys = new int[] {};
     private boolean _hollow;
     private Font _font;
     private FontRenderContext _fontRenderContext;
@@ -172,6 +168,17 @@ public class OxCaptcha {
         textRelative(chars, styles, xOffsets, yOffsets);
     }
     
+    public void textCentered(String chars, int kerning) {
+        int l = chars.length();
+        char[] t = new char[l];
+        chars.getChars(0, l, t, 0);
+        int styles[] = new int[l];
+        for (int i = 0 ; i < l; i++) {
+            styles[i] = Font.PLAIN;
+        }
+        textCentered(t, styles, kerning);
+    }
+    
     // Add letters with relative per letter positioning
     // Offsets give the position of each letter relative to the top right of the previous letter
     // The offsets of the first letter are relative to the top left of the image
@@ -179,9 +186,6 @@ public class OxCaptcha {
     // x increases from left to right
     // y increases from top to bottom
     public void textRelative(char[] chars, int[] styles, int[] xOffsets, int[] yOffsets) {
-        _xOffsets = xOffsets;
-        _yOffsets = yOffsets;
-
         _chars = chars;
         _length = _chars.length;
 
@@ -189,9 +193,11 @@ public class OxCaptcha {
         int x = 0;
         int y = 0;
         char[] cc = new char[1];
+        GlyphVector gv;
+        int gvWidth;
         for (int i = 0; i < _length; i++) {
-            x = x + _xOffsets[i];
-            y = y + _yOffsets[i];
+            x = x + xOffsets[i];
+            y = y + yOffsets[i];
             cc[0] = _chars[i];
 
             _font = _font.deriveFont(styles[i]);
@@ -200,9 +206,9 @@ public class OxCaptcha {
         
             renderChar(cc, x, y);
 
-            GlyphVector gv = _font.createGlyphVector(_fontRenderContext, cc);
-            int width = (int) gv.getVisualBounds().getWidth();
-            x = x + width + 1;
+            gv = _font.createGlyphVector(_fontRenderContext, cc);
+            gvWidth = (int) gv.getVisualBounds().getWidth();
+            x = x + gvWidth + 1;
         }
         _font = _font.deriveFont(Font.PLAIN);
     }
@@ -214,9 +220,6 @@ public class OxCaptcha {
     // x increases from left to right
     // y increases from top to bottom
     public void textAbsolute(char[] chars, int[] styles, int[] xs, int[] ys) {
-        _xs = xs;
-        _ys = ys;
-
         _chars = chars;
         _length = _chars.length;
 
@@ -229,7 +232,45 @@ public class OxCaptcha {
             _img_g.setFont(_font);
             _fontRenderContext = _img_g.getFontRenderContext();
             
-            renderChar(cc, _xs[i], _ys[i]);
+            renderChar(cc, xs[i], ys[i]);
+        }
+        _font = _font.deriveFont(Font.PLAIN);
+    }
+    
+    public void textCentered(char[] chars, int[] styles, int kerning) {
+        _chars = chars;
+        _length = _chars.length;
+        
+        char[] cc = new char[1];
+        GlyphVector gv;
+        int[] gvWidths = new int[_length];
+        int[] gvHeights = new int[_length];
+        int width = 0;
+        int height = 0;
+        for (int i = 0; i < _length; i++) {
+             cc[0] = _chars[i];
+            _font = _font.deriveFont(styles[i]);
+            _img_g.setFont(_font);
+            _fontRenderContext = _img_g.getFontRenderContext();
+            gv = _font.createGlyphVector(_fontRenderContext, cc);
+            gvWidths[i] = (int)gv.getVisualBounds().getWidth();
+            gvHeights[i] = (int)gv.getVisualBounds().getHeight();
+            if (gvHeights[i] > height) {
+                height = gvHeights[i];
+            }
+            width = width + gvWidths[i] + kerning + 1;
+        }
+        int x0 = (_width - width) / 2;
+        int y0 = height + (_height - height) / 2;
+        
+        int x = x0;
+        _img_g.setColor(_fg_color);
+        for (int i = 0; i < _length; i++) {
+            cc[0] = _chars[i];
+            _font = _font.deriveFont(styles[i]);
+            _img_g.setFont(_font);
+            renderChar(cc, x, y0);
+            x = x + gvWidths[i] + kerning + 1;
         }
         _font = _font.deriveFont(Font.PLAIN);
     }
@@ -597,6 +638,55 @@ public class OxCaptcha {
         }
     }
     
+    public void distortionShear2() {
+        int xPeriod = 10 + RAND.nextInt(_width);
+        int xAmplitude = 5 + RAND.nextInt(15);
+        int yPeriod = 10 + RAND.nextInt(_height);
+        int yAmplitude = 5 + RAND.nextInt(15);
+        distortionShear2(xPeriod, xAmplitude, yPeriod, yAmplitude);
+    }
+    
+    public void distortionShear2(int xPeriod, int xAmplitude, int yPeriod, int yAmplitude) {
+        for (int i = 0; i < _width; i++) {
+            int dst_x = i - 1;
+            int dst_y = (int) (Math.sin((double) i / (double) xPeriod) * xAmplitude);
+            int src_x = i;
+            int src_y = 0;
+            int src_w = 1;
+            int src_h = _height;
+            int dx = dst_x - src_x;
+            int dy = dst_y - src_y;
+            _img_g.copyArea(src_x, src_y, src_w, src_h, dx, dy);
+            _img_g.setColor(_bg_color);
+            if (dy >= 0) {
+                _img_g.drawLine(i, 0, i, dy);
+            }
+            else {
+                _img_g.drawLine(i, _height + dy, i, _height);
+            }
+            _img_g.setColor(_fg_color);            
+        }
+        for (int i = 0; i < _height; i++) {
+            int dst_x = (int) (Math.sin((double) i / (double) yPeriod) * yAmplitude);
+            int dst_y = i - 1;
+            int src_x = 0;
+            int src_y = i;
+            int src_w = _width;
+            int src_h = 1;
+            int dx = dst_x - src_x;
+            int dy = dst_y - src_y;
+            _img_g.copyArea(src_x, src_y, src_w, src_h, dx, dy);
+            _img_g.setColor(_bg_color);
+            if (dx >= 0) {
+                _img_g.drawLine(0, i, dx, i);
+            }
+            else {
+                _img_g.drawLine(_width + dx, i, _width, i);
+            }
+            _img_g.setColor(_fg_color);            
+        }
+    }
+    
     public void distortionShear() {
         int xPeriod = RAND.nextInt(10) + 8;
         int xPhase = RAND.nextInt(8) + 8;
@@ -639,6 +729,47 @@ public class OxCaptcha {
         }
     }
 
+    public void recenter() {
+        int p[][] = getImageArray2D();
+        int pb = p[0][0];
+        int xmin = _width - 1;
+        int xmax = 0;
+        int ymin = _height - 1;
+        int ymax = 0;
+        for (int y = 0; y < _height; y++) {
+            for (int x = 0; x < _width; x++) {
+                if (p[y][x] != pb) {
+                    if (x < xmin) {
+                        xmin = x;
+                    }
+                    if (x > xmax) {
+                        xmax = x;
+                    }
+                    if (y < ymin) {
+                        ymin =  y;
+                    }
+                    if (y > ymax) {
+                        ymax = y;
+                    }
+                }
+            }
+        }
+        int w = xmax - xmin + 1;
+        int h = ymax - ymin + 1;
+        
+        if ((w > 0) && (h > 0)) {
+            int xt = (_width - w) / 2;
+            int yt = (_height - h) / 2;
+            BufferedImage b = _img.getSubimage(xmin, ymin, w, h);
+            BufferedImage b2 = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_GRAY);
+            b2.createGraphics().drawImage(b, 0, 0, null);
+            _img_g.setColor(_bg_color);
+            _img_g.fillRect(0, 0, _width, _height);
+            _img_g.drawImage(b2, xt, yt, null);
+        }
+       
+    }
+    
     public int[][] load(String fileName) throws IOException {
         BufferedImage i = ImageIO.read(new File(fileName));
         int height = i.getHeight();
