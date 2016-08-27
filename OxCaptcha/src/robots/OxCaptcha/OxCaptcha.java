@@ -639,17 +639,19 @@ public class OxCaptcha {
     }
     
     public void distortionShear2() {
-        int xPeriod = 10 + RAND.nextInt(_width);
+        int xPhase = RAND.nextInt(_width);
+        int xPeriod = 15 + RAND.nextInt(_width / 2);
         int xAmplitude = 5 + RAND.nextInt(15);
-        int yPeriod = 10 + RAND.nextInt(_height);
-        int yAmplitude = 5 + RAND.nextInt(15);
-        distortionShear2(xPeriod, xAmplitude, yPeriod, yAmplitude);
+        int yPhase = RAND.nextInt(_height);
+        int yPeriod = 15 + RAND.nextInt(_height / 2);
+        int yAmplitude = 5 + RAND.nextInt(20);
+        distortionShear2(xPhase, xPeriod, xAmplitude, yPhase, yPeriod, yAmplitude);
     }
     
-    public void distortionShear2(int xPeriod, int xAmplitude, int yPeriod, int yAmplitude) {
+    public void distortionShear2(int xPhase, int xPeriod, int xAmplitude, int yPhase, int yPeriod, int yAmplitude) {
         for (int i = 0; i < _width; i++) {
             int dst_x = i - 1;
-            int dst_y = (int) (Math.sin((double) i / (double) xPeriod) * xAmplitude);
+            int dst_y = (int) (Math.sin((double)(xPhase + i) / (double) xPeriod) * xAmplitude);
             int src_x = i;
             int src_y = 0;
             int src_w = 1;
@@ -667,7 +669,7 @@ public class OxCaptcha {
             _img_g.setColor(_fg_color);            
         }
         for (int i = 0; i < _height; i++) {
-            int dst_x = (int) (Math.sin((double) i / (double) yPeriod) * yAmplitude);
+            int dst_x = (int) (Math.sin((double)(yPhase + i) / (double) yPeriod) * yAmplitude);
             int dst_y = i - 1;
             int src_x = 0;
             int src_y = i;
