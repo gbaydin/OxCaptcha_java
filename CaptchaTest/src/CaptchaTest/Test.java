@@ -31,13 +31,13 @@ public class Test {
         // Create background
         c.background();
         
-        c.setFont("Courier 10 Pitch", 1, 30);
+        c.setFont("DejaVu Serif", 1, 35);
 //        c.setHollow();
         
         // Add text
 //        c.text(8);
 //        c.text("6AAK");
-        c.textCentered("discussions", -6);
+        c.textCentered("bacitly", 1, -2);
 
 //          c.text("trustother", 3, 40, 3);
 //        c.text(new char[] {'4', 'c', 'z', '8', 'J', 'y', 'A', 'z'}, new int[] {1,1,1,1,1,1,1,1,1}, 0, 30, -4);
@@ -45,6 +45,8 @@ public class Test {
 //        c.text(new char[] {'a', 'b', 'c'}, 0, 30, -2);
 //        c.text("4cz8JyAz", 0);
 //          c.text(new char[] {'a', 'b', 'c', 'd'}, new int[] {0, 1, 2, 3}, 0, 30, -2);
+//          c.textCentered(new char[] {'a', 'b', 'c', 'd'}, new int[] {0, 1, 2, 3}, -2);
+//          c.textCentered(new char[] {'a', 'b', 'c', 'd'}, new int[] {0, 1, 2, 3}, -2);
         
         // Apply distortion
         //c.distortionFishEye();
@@ -53,7 +55,9 @@ public class Test {
 //        c.distortionShear();
 //        c.distortionShear(35, 2, 35, 10);
 //        c.distortionElectric();
+          c.distortionElastic();
         c.distortionShear2();
+//          c.distortionShear2(200, 15, 10, 15, 15, 10);
 
         c.recenter();
         // Add noise

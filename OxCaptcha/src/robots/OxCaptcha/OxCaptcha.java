@@ -179,6 +179,17 @@ public class OxCaptcha {
         textCentered(t, styles, kerning);
     }
     
+    public void textCentered(String chars, int style, int kerning) {
+        int l = chars.length();
+        char[] t = new char[l];
+        chars.getChars(0, l, t, 0);
+        int styles[] = new int[l];
+        for (int i = 0 ; i < l; i++) {
+            styles[i] = style;
+        }
+        textCentered(t, styles, kerning);
+    }
+    
     // Add letters with relative per letter positioning
     // Offsets give the position of each letter relative to the top right of the previous letter
     // The offsets of the first letter are relative to the top left of the image
@@ -640,11 +651,11 @@ public class OxCaptcha {
     
     public void distortionShear2() {
         int xPhase = RAND.nextInt(_width);
-        int xPeriod = 15 + RAND.nextInt(_width / 2);
-        int xAmplitude = 5 + RAND.nextInt(15);
+        int xPeriod = 15 + RAND.nextInt(20);
+        int xAmplitude = 5 + RAND.nextInt(10);
         int yPhase = RAND.nextInt(_height);
-        int yPeriod = 15 + RAND.nextInt(_height / 2);
-        int yAmplitude = 5 + RAND.nextInt(20);
+        int yPeriod = 15 + RAND.nextInt(20);
+        int yAmplitude = 5 + RAND.nextInt(10);
         distortionShear2(xPhase, xPeriod, xAmplitude, yPhase, yPeriod, yAmplitude);
     }
     
@@ -701,6 +712,72 @@ public class OxCaptcha {
     public void distortionShear(int xPeriod, int xPhase, int yPeriod, int yPhase) {
         shearX(_img_g, xPeriod, xPhase, _width, _height);
         shearY(_img_g, yPeriod, yPhase, _width, _height);
+    }
+    
+    public void distortionElastic() {
+        distortionElastic(35);
+    }
+    
+    public void distortionElastic(double alpha) {
+        int s[][] = getImageArray2D();
+        double source[][] = new double[_height][_width];
+        double dxField[][] = new double[_height][_width];
+        double dyField[][] = new double[_height][_width];
+        for (int y = 0; y < _height; y++) 
+        {
+            for (int x = 0 ; x < _width; x++) 
+            {
+                dxField[y][x] = 2 * (RAND.nextDouble() - 0.5);
+                dyField[y][x] = 2 * (RAND.nextDouble() - 0.5);
+                if (RAND.nextDouble() < 0.1) 
+                {
+                    dxField[y][x] = dxField[y][x] * 5;
+                }
+                if (RAND.nextDouble() < 0.1) 
+                {
+                    dyField[y][x] = dyField[y][x] * 5;
+                }
+                source[y][x] = (double)s[y][x];
+            }
+        }
+        
+        dxField = OxCaptcha.gaussian(dxField, 11, 8);
+        dyField = OxCaptcha.gaussian(dyField, 11, 8);
+        
+        for (int y = 0; y < _height; y++) 
+        {
+            for (int x = 0; x < _width; x++)
+            {
+                double dx = dxField[y][x] * alpha;
+                double dy = dyField[y][x] * alpha;
+                
+                double sx = (double)x + dx;
+                double sy = (double)y + dy;
+                if ((sx < 0) || (sx > _width - 2) || (sy < 0) || (sy > _height - 2))
+                {
+                    _img.setRGB(x, y, _bg_color.getRGB());
+                }
+                else
+                {
+                    int sxleft = (int)Math.floor(sx);
+                    int sxright = sxleft + 1;
+                    double sxdist = sx % 1;
+                    
+                    int sytop = (int)Math.floor(sy);
+                    int sybottom = sytop + 1;
+                    double sydist = sy % 1;
+                    double top = (1. - sxdist) * source[sytop][sxleft] + sxdist * source[sytop][sxright];
+                    double bottom = (1. - sxdist) * source[sybottom][sxleft] + sxdist * source[sybottom][sxright];
+                    double target = (1. - sydist) * top + sydist * bottom;
+                    int t = Math.max(Math.min((int)target, 255), 0);
+//                    double target = (dyField[y][x] + 1) * 128;
+//                    System.out.println(target);
+                    _img.setRGB(x, y, new Color(t, t, t).getRGB());
+                }
+                
+            }
+        }
+        
     }
 
     public void normalize() {
@@ -831,7 +908,6 @@ public class OxCaptcha {
                 int p = _img.getRGB(x, y);
                 int red = (p >> 16) & 0xff;
                 ret[y][x] = red;
-
             }
         }
         return ret;
@@ -919,4 +995,114 @@ public class OxCaptcha {
             g.setColor(_fg_color);
         }
     }
+
+  public static double singlePixelConvolution(double [][] input,
+					      int x, int y,
+					      double [][] k,
+					      int kernelWidth,
+					      int kernelHeight){
+    double output = 0;
+    for(int i=0;i<kernelWidth;++i){
+      for(int j=0;j<kernelHeight;++j){
+	output = output + (input[x+i][y+j] * k[i][j]);
+      }
+    }
+    return output;
+  }
+
+
+  public static double [][] convolution2D(double [][] input,
+					      int width, int height,
+					      double [][] kernel,
+					      int kernelWidth,
+					      int kernelHeight){
+    int smallWidth = width - kernelWidth + 1;
+    int smallHeight = height - kernelHeight + 1;
+    double [][] output = new double [smallWidth][smallHeight];
+    for(int i=0;i<smallWidth;++i){
+      for(int j=0;j<smallHeight;++j){
+	output[i][j]=0;
+      }
+    }
+    for(int i=0;i<smallWidth;++i){
+      for(int j=0;j<smallHeight;++j){
+	output[i][j] = singlePixelConvolution(input,i,j,kernel,
+					kernelWidth,kernelHeight);
+//if (i==32- kernelWidth + 1 && j==100- kernelHeight + 1) System.out.println("Convolve2D: "+output[i][j]);
+      }
+    }
+    return output;
+  }
+  
+    public static double [][] convolution2DPadded(double [][] input,
+						int width, int height,
+						double [][] kernel,
+						int kernelWidth,
+						int kernelHeight){
+    int smallWidth = width - kernelWidth + 1;
+    int smallHeight = height - kernelHeight + 1;
+    int top = kernelHeight/2;
+    int left = kernelWidth/2;
+    double small [][] = new double [smallWidth][smallHeight];
+    small = convolution2D(input,width,height,
+			  kernel,kernelWidth,kernelHeight);
+    double large [][] = new double [width][height];
+    for(int j=0;j<height;++j){
+      for(int i=0;i<width;++i){
+	large[i][j] = 0;
+      }
+    }
+    for(int j=0;j<smallHeight;++j){
+      for(int i=0;i<smallWidth;++i){
+//if (i+left==32 && j+top==100) System.out.println("Convolve2DP: "+small[i][j]);
+	large[i+left][j+top]=small[i][j];
+      }
+    }
+    return large;
+  }
+  
+      public static double gaussianDiscrete2D(double theta, int x, int y){
+    double g = 0;
+    for(double ySubPixel = y - 0.5; ySubPixel < y + 0.55; ySubPixel += 0.1){
+      for(double xSubPixel = x - 0.5; xSubPixel < x + 0.55; xSubPixel += 0.1){
+	g = g + ((1/(2*Math.PI*theta*theta)) *
+		 Math.pow(Math.E,-(xSubPixel*xSubPixel+ySubPixel*ySubPixel)/
+			  (2*theta*theta)));
+      }
+    }
+    g = g/121;
+    //System.out.println(g);
+    return g;
+  }
+  
+      public static double [][] gaussian2D(double theta, int size){
+    double [][] kernel = new double [size][size];
+    for(int j=0;j<size;++j){
+      for(int i=0;i<size;++i){
+	kernel[i][j]=gaussianDiscrete2D(theta,i-(size/2),j-(size/2));
+      }
+    }
+
+    double sum = 0;
+    for(int j=0;j<size;++j){
+      for(int i=0;i<size;++i){
+	sum = sum + kernel[i][j];
+
+      }
+    }
+
+    return kernel;
+  }
+
+    public static double [][] gaussian(double [][] input,
+				   int ks, double sigma){
+    int width = input.length;
+    int height = input[0].length;
+    double [][] gaussianKernel = new double [ks][ks];
+    double [][] output = new double [width][height];
+    gaussianKernel = gaussian2D(sigma,ks);
+    output = convolution2DPadded(input,width,height,
+					   gaussianKernel,ks,ks);
+    return output;
+  }
 }
