@@ -864,7 +864,7 @@ public class OxCaptcha {
     }
     
     public void save(int[] pixels, int width, int height, String fileName) throws IOException {
-        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         int i = 0;
         for (int y = 0; y < height; y++)
         {
@@ -880,7 +880,7 @@ public class OxCaptcha {
     public void save(int[][] pixels, String fileName) throws IOException {
         int height = pixels.length;
         int width = pixels[0].length;
-        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
