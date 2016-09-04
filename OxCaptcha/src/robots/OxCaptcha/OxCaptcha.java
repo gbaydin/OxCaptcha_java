@@ -715,7 +715,7 @@ public class OxCaptcha {
     }
     
     public void distortionElastic() {
-        distortionElastic(35);
+        distortionElastic(40);
     }
     
     public void distortionElastic(double alpha) {
@@ -766,6 +766,7 @@ public class OxCaptcha {
                     int sytop = (int)Math.floor(sy);
                     int sybottom = sytop + 1;
                     double sydist = sy % 1;
+                    
                     double top = (1. - sxdist) * source[sytop][sxleft] + sxdist * source[sytop][sxright];
                     double bottom = (1. - sxdist) * source[sybottom][sxleft] + sxdist * source[sybottom][sxright];
                     double target = (1. - sydist) * top + sydist * bottom;
