@@ -27,15 +27,13 @@ import java.awt.image.Kernel;
 import java.awt.image.ConvolveOp;
 import javax.imageio.ImageIO;
 import java.io.*;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+//import java.security.SecureRandom;
 import java.util.Random;
 
 
 public class OxCaptcha {
-    private static final Random RAND = new SecureRandom();
+//    private static final Random RAND = new SecureRandom();
+    private static final Random RAND = new Random();
 
     private BufferedImage _img;
     private Graphics2D _img_g;
@@ -997,113 +995,97 @@ public class OxCaptcha {
         }
     }
 
-  public static double singlePixelConvolution(double [][] input,
-					      int x, int y,
-					      double [][] k,
-					      int kernelWidth,
-					      int kernelHeight){
-    double output = 0;
-    for(int i=0;i<kernelWidth;++i){
-      for(int j=0;j<kernelHeight;++j){
-	output = output + (input[x+i][y+j] * k[i][j]);
-      }
+    public static double singlePixelConvolution(double [][] input, int x, int y, double [][] k, int kernelWidth, int kernelHeight){
+        double output = 0;
+        for(int i=0;i<kernelWidth;++i){
+          for(int j=0;j<kernelHeight;++j){
+            output = output + (input[x+i][y+j] * k[i][j]);
+          }
+        }
+        return output;
     }
-    return output;
-  }
 
-
-  public static double [][] convolution2D(double [][] input,
-					      int width, int height,
-					      double [][] kernel,
-					      int kernelWidth,
-					      int kernelHeight){
-    int smallWidth = width - kernelWidth + 1;
-    int smallHeight = height - kernelHeight + 1;
-    double [][] output = new double [smallWidth][smallHeight];
-    for(int i=0;i<smallWidth;++i){
-      for(int j=0;j<smallHeight;++j){
-	output[i][j]=0;
-      }
+    public static double [][] convolution2D(double [][] input, int width, int height, double [][] kernel, int kernelWidth, int kernelHeight){
+        int smallWidth = width - kernelWidth + 1;
+        int smallHeight = height - kernelHeight + 1;
+        double [][] output = new double [smallWidth][smallHeight];
+        for(int i=0;i<smallWidth;++i){
+          for(int j=0;j<smallHeight;++j){
+            output[i][j]=0;
+          }
+        }
+        for(int i=0;i<smallWidth;++i){
+          for(int j=0;j<smallHeight;++j){
+            output[i][j] = singlePixelConvolution(input,i,j,kernel,
+                                            kernelWidth,kernelHeight);
+    //if (i==32- kernelWidth + 1 && j==100- kernelHeight + 1) System.out.println("Convolve2D: "+output[i][j]);
+          }
+        }
+        return output;
     }
-    for(int i=0;i<smallWidth;++i){
-      for(int j=0;j<smallHeight;++j){
-	output[i][j] = singlePixelConvolution(input,i,j,kernel,
-					kernelWidth,kernelHeight);
-//if (i==32- kernelWidth + 1 && j==100- kernelHeight + 1) System.out.println("Convolve2D: "+output[i][j]);
-      }
-    }
-    return output;
-  }
   
-    public static double [][] convolution2DPadded(double [][] input,
-						int width, int height,
-						double [][] kernel,
-						int kernelWidth,
-						int kernelHeight){
-    int smallWidth = width - kernelWidth + 1;
-    int smallHeight = height - kernelHeight + 1;
-    int top = kernelHeight/2;
-    int left = kernelWidth/2;
-    double small [][] = new double [smallWidth][smallHeight];
-    small = convolution2D(input,width,height,
-			  kernel,kernelWidth,kernelHeight);
-    double large [][] = new double [width][height];
-    for(int j=0;j<height;++j){
-      for(int i=0;i<width;++i){
-	large[i][j] = 0;
-      }
+    public static double [][] convolution2DPadded(double [][] input, int width, int height, double [][] kernel,	int kernelWidth, int kernelHeight){
+        int smallWidth = width - kernelWidth + 1;
+        int smallHeight = height - kernelHeight + 1;
+        int top = kernelHeight/2;
+        int left = kernelWidth/2;
+        double small [][] = new double [smallWidth][smallHeight];
+        small = convolution2D(input,width,height,
+                              kernel,kernelWidth,kernelHeight);
+        double large [][] = new double [width][height];
+        for(int j=0;j<height;++j){
+          for(int i=0;i<width;++i){
+            large[i][j] = 0;
+          }
+        }
+        for(int j=0;j<smallHeight;++j){
+          for(int i=0;i<smallWidth;++i){
+            //if (i+left==32 && j+top==100) System.out.println("Convolve2DP: "+small[i][j]);
+            large[i+left][j+top]=small[i][j];
+          }
+        }
+        return large;
     }
-    for(int j=0;j<smallHeight;++j){
-      for(int i=0;i<smallWidth;++i){
-//if (i+left==32 && j+top==100) System.out.println("Convolve2DP: "+small[i][j]);
-	large[i+left][j+top]=small[i][j];
-      }
-    }
-    return large;
-  }
   
-      public static double gaussianDiscrete2D(double theta, int x, int y){
-    double g = 0;
-    for(double ySubPixel = y - 0.5; ySubPixel < y + 0.55; ySubPixel += 0.1){
-      for(double xSubPixel = x - 0.5; xSubPixel < x + 0.55; xSubPixel += 0.1){
-	g = g + ((1/(2*Math.PI*theta*theta)) *
-		 Math.pow(Math.E,-(xSubPixel*xSubPixel+ySubPixel*ySubPixel)/
-			  (2*theta*theta)));
-      }
+    public static double gaussianDiscrete2D(double theta, int x, int y){
+        double g = 0;
+        for(double ySubPixel = y - 0.5; ySubPixel < y + 0.55; ySubPixel += 0.1){
+          for(double xSubPixel = x - 0.5; xSubPixel < x + 0.55; xSubPixel += 0.1){
+            g = g + ((1/(2*Math.PI*theta*theta)) *
+                     Math.pow(Math.E,-(xSubPixel*xSubPixel+ySubPixel*ySubPixel)/
+                              (2*theta*theta)));
+          }
+        }
+        g = g/121;
+        return g;
     }
-    g = g/121;
-    //System.out.println(g);
-    return g;
-  }
   
-      public static double [][] gaussian2D(double theta, int size){
-    double [][] kernel = new double [size][size];
-    for(int j=0;j<size;++j){
-      for(int i=0;i<size;++i){
-	kernel[i][j]=gaussianDiscrete2D(theta,i-(size/2),j-(size/2));
-      }
+    public static double [][] gaussian2D(double theta, int size){
+        double [][] kernel = new double [size][size];
+        for(int j=0;j<size;++j){
+          for(int i=0;i<size;++i){
+            kernel[i][j]=gaussianDiscrete2D(theta,i-(size/2),j-(size/2));
+          }
+        }
+
+        double sum = 0;
+        for(int j=0;j<size;++j){
+          for(int i=0;i<size;++i){
+            sum = sum + kernel[i][j];
+
+          }
+        }
+
+        return kernel;
     }
-
-    double sum = 0;
-    for(int j=0;j<size;++j){
-      for(int i=0;i<size;++i){
-	sum = sum + kernel[i][j];
-
-      }
+    
+    public static double [][] gaussian(double [][] input, int ks, double sigma){
+        int width = input.length;
+        int height = input[0].length;
+        double [][] gaussianKernel = new double [ks][ks];
+        double [][] output = new double [width][height];
+        gaussianKernel = gaussian2D(sigma,ks);
+        output = convolution2DPadded(input,width,height,gaussianKernel,ks,ks);
+        return output;
     }
-
-    return kernel;
-  }
-
-    public static double [][] gaussian(double [][] input,
-				   int ks, double sigma){
-    int width = input.length;
-    int height = input[0].length;
-    double [][] gaussianKernel = new double [ks][ks];
-    double [][] output = new double [width][height];
-    gaussianKernel = gaussian2D(sigma,ks);
-    output = convolution2DPadded(input,width,height,
-					   gaussianKernel,ks,ks);
-    return output;
-  }
 }
