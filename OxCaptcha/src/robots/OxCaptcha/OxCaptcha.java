@@ -52,7 +52,7 @@ public class OxCaptcha {
             '2', '3', '4', '5', '6', '7', '8', 'A', 'J', 'K','z','q','S'};
 
     public OxCaptcha(int width, int height) {
-        _img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        _img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         _img_g = _img.createGraphics();
         _hollow = false;
         _font = new Font("Arial", Font.PLAIN, 40);
@@ -648,12 +648,12 @@ public class OxCaptcha {
     }
     
     public void distortionShear2() {
-        int xPhase = RAND.nextInt(_width);
-        int xPeriod = 15 + RAND.nextInt(20);
-        int xAmplitude = 5 + RAND.nextInt(10);
-        int yPhase = RAND.nextInt(_height);
-        int yPeriod = 15 + RAND.nextInt(20);
-        int yAmplitude = 5 + RAND.nextInt(10);
+        int xPhase = -_width + 2 * RAND.nextInt(_width);
+        int xPeriod = 6 + RAND.nextInt(30);
+        int xAmplitude = 2 + RAND.nextInt(7);
+        int yPhase = -_height + 2 * RAND.nextInt(_height);
+        int yPeriod = 10 + RAND.nextInt(20);
+        int yAmplitude = 2 + RAND.nextInt(15);
         distortionShear2(xPhase, xPeriod, xAmplitude, yPhase, yPeriod, yAmplitude);
     }
     
@@ -713,7 +713,7 @@ public class OxCaptcha {
     }
     
     public void distortionElastic() {
-        distortionElastic(40);
+        distortionElastic(38);
     }
     
     public void distortionElastic(double alpha) {
@@ -839,7 +839,7 @@ public class OxCaptcha {
             int xt = (_width - w) / 2;
             int yt = (_height - h) / 2;
             BufferedImage b = _img.getSubimage(xmin, ymin, w, h);
-            BufferedImage b2 = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_GRAY);
+            BufferedImage b2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
             b2.createGraphics().drawImage(b, 0, 0, null);
             _img_g.setColor(_bg_color);
             _img_g.fillRect(0, 0, _width, _height);
