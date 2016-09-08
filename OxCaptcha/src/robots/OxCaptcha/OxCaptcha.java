@@ -647,6 +647,65 @@ public class OxCaptcha {
         }
     }
     
+    public void distortionElectric2() {
+        distortionElectric2(24);
+    }
+    
+    public void distortionElectric2(double alpha) {
+        int s[][] = getImageArray2D();
+        double source[][] = new double[_height][_width];
+        double dxField[][] = new double[_height][_width];
+        double dyField[][] = new double[_height][_width];
+        for (int y = 0; y < _height; y++) 
+        {
+            for (int x = 0 ; x < _width; x++) 
+            {
+                dxField[y][x] = 2 * (RAND.nextDouble() - 0.5);
+                dyField[y][x] = 2 * (RAND.nextDouble() - 0.5);
+                source[y][x] = (double)s[y][x];
+            }
+        }
+        
+        dxField = OxCaptcha.gaussian(dxField, 2, 2.2);
+        dyField = OxCaptcha.gaussian(dyField, 2, 2.2);
+        
+        for (int y = 0; y < _height; y++) 
+        {
+            for (int x = 0; x < _width; x++)
+            {
+                double dx = dxField[y][x] * alpha;
+                double dy = dyField[y][x] * alpha;
+                
+                double sx = (double)x + dx;
+                double sy = (double)y + dy;
+                if ((sx < 0) || (sx > _width - 2) || (sy < 0) || (sy > _height - 2))
+                {
+                    _img.setRGB(x, y, _bg_color.getRGB());
+                }
+                else
+                {
+                    int sxleft = (int)Math.floor(sx);
+                    int sxright = sxleft + 1;
+                    double sxdist = sx % 1;
+                    
+                    int sytop = (int)Math.floor(sy);
+                    int sybottom = sytop + 1;
+                    double sydist = sy % 1;
+                    
+                    double top = (1. - sxdist) * source[sytop][sxleft] + sxdist * source[sytop][sxright];
+                    double bottom = (1. - sxdist) * source[sybottom][sxleft] + sxdist * source[sybottom][sxright];
+                    double target = (1. - sydist) * top + sydist * bottom;
+                    int t = Math.max(Math.min((int)target, 255), 0);
+//                    double target = (dyField[y][x] + 1) * 128;
+//                    System.out.println(target);
+                    _img.setRGB(x, y, new Color(t, t, t).getRGB());
+                }
+                
+            }
+        }
+        
+    }
+
     public void distortionShear2() {
         int xPhase = -_width + 2 * RAND.nextInt(_width);
         int xPeriod = 6 + RAND.nextInt(30);
