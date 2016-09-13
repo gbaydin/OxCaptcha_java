@@ -2,11 +2,9 @@
 package robots.OxCaptcha;
 
 
-import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
@@ -14,11 +12,11 @@ import java.awt.Toolkit;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Arc2D;
 import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.FilteredImageSource;
@@ -139,9 +137,24 @@ public class OxCaptcha {
     }
 
     public void text(char[] chars, int xOffset, int yOffset, int kerning) {
+        text(chars, xOffset, yOffset, Font.PLAIN, kerning);
+    }
+    
+    public void text(String chars, int xOffset, int yOffset, int style, int kerning) {
+        int l = chars.length();
+        char[] t = new char[l];
+        chars.getChars(0, l, t, 0);
+        int styles[] = new int[t.length];
+        for (int i = 0 ; i < t.length; i++) {
+            styles[i] = style;
+        }
+        text(t, styles, xOffset, yOffset, kerning);
+    }
+    
+    public void text(char[] chars, int xOffset, int yOffset, int style, int kerning) {
         int styles[] = new int[chars.length];
         for (int i = 0 ; i < chars.length; i++) {
-            styles[i] = Font.PLAIN;
+            styles[i] = style;
         }
         text(chars, styles, xOffset, yOffset, kerning);
     }
@@ -473,7 +486,33 @@ public class OxCaptcha {
                     (int) pts[i + 1].getX(), (int) pts[i + 1].getY());
         }
     }
+    
+    public void noiseStrokes() {
+        noiseStrokes(8, 1.5f);
+    }
 
+    public void noiseStrokes(int strokes, float width) {
+        _img_g.setStroke(new BasicStroke(width));
+        _img_g.setColor(_fg_color);
+        for (int i = 0; i < strokes; i++)
+        {
+            Path2D.Double path = new Path2D.Double();
+            path.moveTo(RAND.nextInt(_width), RAND.nextInt(_height));
+            path.curveTo(RAND.nextInt(_width), RAND.nextInt(_height), RAND.nextInt(_width), RAND.nextInt(_height), RAND.nextInt(_width), RAND.nextInt(_height));
+            _img_g.draw(path);
+        }
+    }
+    
+    public void noiseEllipses(int ellipses, float width) {
+        _img_g.setStroke(new BasicStroke(width));
+        _img_g.setColor(_bg_color);
+        for (int i = 0; i < ellipses; i++)
+        {
+            Ellipse2D.Double ellipse = new Ellipse2D.Double(RAND.nextInt(_width), RAND.nextInt(_height), RAND.nextInt(_width), RAND.nextInt(_height));
+            _img_g.draw(ellipse);
+        }
+    }
+    
     public void noiseStraightLine() {
         noiseStraightLine(_fg_color, 3.0f);
     }
@@ -776,6 +815,10 @@ public class OxCaptcha {
     }
     
     public void distortionElastic(double alpha) {
+        distortionElastic(alpha, 11, 8);
+    }
+    
+    public void distortionElastic(double alpha, int kernelSize, double sigma) {
         int s[][] = getImageArray2D();
         double source[][] = new double[_height][_width];
         double dxField[][] = new double[_height][_width];
@@ -798,8 +841,8 @@ public class OxCaptcha {
             }
         }
         
-        dxField = OxCaptcha.gaussian(dxField, 11, 8);
-        dyField = OxCaptcha.gaussian(dyField, 11, 8);
+        dxField = OxCaptcha.gaussian(dxField, kernelSize, sigma);
+        dyField = OxCaptcha.gaussian(dyField, kernelSize, sigma);
         
         for (int y = 0; y < _height; y++) 
         {
