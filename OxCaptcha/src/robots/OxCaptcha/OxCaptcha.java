@@ -584,7 +584,37 @@ public class OxCaptcha {
             _img_g.drawLine(x, y, x, y);
         }
     }
+    
+    public void noiseWhiteGaussian() {
+        noiseWhiteGaussian(1.0);
+    }
+    
+    public void noiseWhiteGaussian(double sigma) {
+        for (int y = 0; y < _height; y++)
+        {
+            for (int x = 0; x < _width; x++)
+            {
+                int p = (_img.getRGB(x, y) & 0xFF);
+                p = (int)(((double)p) + sigma * RAND.nextGaussian());
+                p = Math.max(0, Math.min(255, p));
+                _img.setRGB(x, y, new Color(p, p, p).getRGB());
+            }
+        }
+    }
 
+        
+    public void noiseWhiteUniform() {
+        for (int y = 0; y < _height; y++)
+        {
+            for (int x = 0; x < _width; x++)
+            {
+                int p = (_img.getRGB(x, y) & 0xFF);
+                p = (int)(((double)p) + RAND.nextInt(256));
+                p = Math.max(0, Math.min(255, p));
+                _img.setRGB(x, y, new Color(p, p, p).getRGB());
+            }
+        }
+    }
     public void distortion() {
         distortionShear();
     }
