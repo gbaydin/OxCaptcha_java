@@ -298,6 +298,7 @@ public class OxCaptcha {
     }
 
     public void renderString(String s, int x, int y) {
+        _img_g.setColor(_fg_color);
         _img_g.drawString(s, x, y);
     }
         
