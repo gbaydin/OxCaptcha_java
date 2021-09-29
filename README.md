@@ -45,7 +45,7 @@ catch (IOException e) {
 }
 ```
 
-![alt text](https://raw.githubusercontent.com/gbaydin/OxCaptcha/master/test.png "")
+![alt text](https://raw.githubusercontent.com/gbaydin/OxCaptcha_java/master/test.png "")
 
 ### License
 
